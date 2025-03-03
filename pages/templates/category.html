@@ -40,6 +40,14 @@
                     </a>
                 </li>
             {% endfor %}
+
+            {% for category in categories %}
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="?category={{category.name }}">
+                        {{ category.name }}
+                    </a>
+                </li>
+            {% endfor %}
         </ul>
     </nav>
 

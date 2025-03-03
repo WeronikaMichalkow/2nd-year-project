@@ -1,3 +1,4 @@
+from django.views.generic import TemplateView
 from django.shortcuts import render
 from store.models import Product, Category
 
@@ -9,4 +10,5 @@ def homepage(request):
 def menspage(request):
     return render(request, "mens.html")
 
-
+def kids_view(request):
+    return render(request, 'kids.html')

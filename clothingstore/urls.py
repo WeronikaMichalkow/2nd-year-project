@@ -21,6 +21,9 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pages.urls')),  # Homepage comes from the pages app
-    path('store/', include('store.urls')), 
-    path('search/', include('search.urls')),  # Use /mens/ for the store app
+    path('store/', include('store.urls')),  # Use /mens/ for the store app
+    path('search/', include('search.urls')), 
+    path('accounts/',include('accounts.urls')),
+    path('reviews/', include('reviews.urls')),
+    path('', include('pages.urls')),
 ]

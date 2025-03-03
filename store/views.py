@@ -50,3 +50,8 @@ def category_view(request, main_category):
         'subcategories': subcategories,
         'products': products,
     })
+
+
+def all_products_view(request):
+    products = Product.objects.all()  # Get all products
+    return render(request, 'store/all_products.html', {'products': products})
