@@ -22,21 +22,15 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-<<<<<<< HEAD
     path('', include('pages.urls')),  # Homepage comes from the pages app
     path('store/', include('store.urls')),  # Use /mens/ for the store app
     path('search/', include('search.urls')), 
     path('accounts/',include('accounts.urls')),
     path('reviews/', include('reviews.urls')),
     path('', include('pages.urls')),
-]
-=======
-    path('', include('pages.urls')),  #pages app
-    path('store/', include('store.urls')),  #store app
     path('search/', include('search.urls')), #search app
     path('wishlist/', include('wishlist.urls', namespace='wishlist')),  #wishlist app
 ] 
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
->>>>>>> Weronika

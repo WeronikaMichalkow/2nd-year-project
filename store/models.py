@@ -7,10 +7,7 @@ class Category(models.Model):
     def __str__(self):
         return f"{self.parent.name} - {self.name}" if self.parent else self.name
 
-<<<<<<< HEAD
-=======
     
->>>>>>> Weronika
 class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()

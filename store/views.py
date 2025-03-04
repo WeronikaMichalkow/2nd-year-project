@@ -2,12 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from .models import Product, Category
 
 
-<<<<<<< HEAD
 
 
 # View to display products under the 'Men' category
-=======
->>>>>>> Weronika
 def mens_view(request):
 
     men_category = get_object_or_404(Category, name="Men")
@@ -33,7 +30,6 @@ def category_view(request, main_category):
     # Get the main category (e.g., Men, Women, Kids)
     main_category_obj = get_object_or_404(Category, name__iexact=main_category)
 
-<<<<<<< HEAD
     # Fetch all subcategories under this main category
     subcategories = Category.objects.filter(parent=main_category_obj)
 
@@ -46,7 +42,6 @@ def category_view(request, main_category):
     else:
         # Show products from the main category and all its subcategories
         products = Product.objects.filter(category__in=[main_category_obj] + list(subcategories))
-=======
     # Fetch ONLY subcategories under this main category
     subcategories = Category.objects.filter(parent=main_category_obj)
 
@@ -61,14 +56,12 @@ def category_view(request, main_category):
         # Filter by a specific subcategory
         subcategory = get_object_or_404(Category, name__iexact=subcategory_name, parent=main_category_obj)
         products = Product.objects.filter(category=subcategory)
->>>>>>> Weronika
 
     return render(request, 'category.html', {
         'main_category': main_category_obj,
         'subcategories': subcategories,
         'products': products,
     })
-<<<<<<< HEAD
 
 
 def kids_view(request):
@@ -91,5 +84,3 @@ def kids_view(request):
         'subcategories': subcategories
     })
 
-=======
->>>>>>> Weronika
