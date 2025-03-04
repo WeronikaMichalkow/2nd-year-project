@@ -1,7 +1,7 @@
 # pages/urls.py
 from django.urls import path, include
 from store.views import mens_view # Now the import will work
-from .views import homepage,kids_view
+from .views import homepage,kidspage
 from reviews.views import ReviewsView  # Correct import
 
 urlpatterns = [
@@ -9,6 +9,6 @@ urlpatterns = [
     path('', homepage, name='homepage'),
     path('accounts/', include('accounts.urls')),
     path('reviews/', include('reviews.urls')),
-    path('kids/', kids_view, name='kids_page'), 
+    path('kids/', kidspage, name='kidspage'),
 ]
 

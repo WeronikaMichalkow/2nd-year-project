@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Category
 
+
+
+
 # View to display products under the 'Men' category
 def mens_view(request):
     # Get the "Men" category
@@ -28,22 +31,20 @@ def mens_view(request):
 
 def category_view(request, main_category):
     # Get the main category (e.g., Men, Women, Kids)
-    main_category_obj = get_object_or_404(Category, name__iexact=main_category, parent__isnull=True)
+    main_category_obj = get_object_or_404(Category, name__iexact=main_category)
 
-    # Get all subcategories under this main category
-    subcategories = main_category_obj.subcategories.all()
+    # Fetch all subcategories under this main category
+    subcategories = Category.objects.filter(parent=main_category_obj)
 
-    # Check if a subcategory filter is applied
+    # Get the selected subcategory from the URL query (if any)
     subcategory_name = request.GET.get('subcategory')
 
     if subcategory_name:
-        # Show products only for the selected subcategory
-        subcategory = get_object_or_404(Category, name=subcategory_name, parent=main_category_obj)
+        subcategory = get_object_or_404(Category, name__iexact=subcategory_name, parent=main_category_obj)
         products = Product.objects.filter(category=subcategory)
     else:
-        # Include products from the main category AND its subcategories
-        all_categories = [main_category_obj] + list(subcategories)
-        products = Product.objects.filter(category__in=all_categories)
+        # Show products from the main category and all its subcategories
+        products = Product.objects.filter(category__in=[main_category_obj] + list(subcategories))
 
     return render(request, 'category.html', {
         'main_category': main_category_obj,
@@ -52,6 +53,23 @@ def category_view(request, main_category):
     })
 
 
-def all_products_view(request):
-    products = Product.objects.all()  # Get all products
-    return render(request, 'store/all_products.html', {'products': products})
+def kids_view(request):
+    # Get the "Men" category
+    kids_category = get_object_or_404(Category, name="Kids")
+
+    # Get all subcategories related to "Men"
+    subcategories = Category.objects.exclude(name="Kids")
+
+    # Filter products by selected subcategory (if provided)
+    subcategory_name = request.GET.get('subcategory')
+    if subcategory_name:
+        products = Product.objects.filter(category__name=subcategory_name)
+    else:
+        # Show all products for Men if no subcategory is selected
+        products = Product.objects.filter(category=kids_category)
+
+    return render(request, 'kids.html', {
+        'products': products,
+        'subcategories': subcategories
+    })
+
