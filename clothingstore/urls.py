@@ -17,10 +17,16 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('pages.urls')),  # Homepage comes from the pages app
-    path('store/', include('store.urls')), 
-    path('search/', include('search.urls')),  # Use /mens/ for the store app
-]
+    path('', include('pages.urls')),  #pages app
+    path('store/', include('store.urls')),  #store app
+    path('search/', include('search.urls')), #search app
+    path('wishlist/', include('wishlist.urls', namespace='wishlist')),  #wishlist app
+] 
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
