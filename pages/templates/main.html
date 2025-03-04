@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Home - Clothing Store</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+    
+    <main style="padding-top: 90px;">
+        <div class="container mt-3">
+            <div class="row">
+
+                
+                <div class="col-md-4">
+                    <div class="card" style="width: 20rem; height: 15rem;">
+                        <img src="{% static 'css/images/projectlogo.png' %}" alt="Women Clothing">
+                        <div class="card-body">
+                            <h5 class="card-title">Women</h5>
+                            <p class="card-text">Explore the latest fashion trends for women.</p>
+                            <a href="{% url 'category_page' 'women' %}" class="btn btn-dark">Go to Women's Clothing</a>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="col-md-4">
+                    <div class="card" style="width: 20rem; height: 15rem;">
+                        <img src="{% static 'css/images/projectlogo.png' %}" alt="Men Clothing">
+                        <div class="card-body">
+                            <h5 class="card-title">Men</h5>
+                            <p class="card-text">Discover our stylish men's collection.</p>
+                            <a href="{% url 'category_page' 'men' %}" class="btn btn-dark">Go to Men's Clothing</a>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="col-md-4">
+                    <div class="card" style="width: 20rem; height: 15rem;">
+                        <img src="{% static 'css/images/projectlogo.png' %}" alt="Kids Clothing">
+                        <div class="card-body">
+                            <h5 class="card-title">Kids</h5>
+                            <p class="card-text">Trendy and comfortable clothing for kids.</p>
+                            <a href="{% url 'category_page' 'kids' %}" class="btn btn-dark">Go to Kids' Clothing</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
