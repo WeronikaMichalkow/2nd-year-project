@@ -1,10 +1,14 @@
 from django.contrib import admin
+<<<<<<< HEAD
 from .models import Category, Product, Customer
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent')  # Display name and parent category in the list
     list_filter = ('parent',)  # Add filtering by parent category
     search_fields = ('name',)  # Enable search by name
+=======
+from .models import Product, Category, Customer
+>>>>>>> Weronika
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price')  # Display product details in the list view
