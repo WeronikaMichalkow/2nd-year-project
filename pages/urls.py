@@ -1,5 +1,5 @@
 from django.urls import path, include
-from store.views import mens_view, kids_view  # Import for store views
+from store.views import mens_view, kids_view, womens_view  # Import for store views
 from reviews.views import ReviewsView  # Correct import for reviews
 from . import views
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path('cos_accounts/', include('cos_accounts.urls')),
     path('reviews/', include('reviews.urls')),
     path('kids/', kids_view, name='kidspage'),
+    path('womens/', womens_view, name='womenspage'),
 ]
 
 
