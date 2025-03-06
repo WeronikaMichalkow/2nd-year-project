@@ -1,9 +1,7 @@
 from django.urls import path
-from .views import mens_view, category_view, kids_view
+from . import views
 
 urlpatterns = [
-    path('store/men/', mens_view, name='mens_page'),
-    path('store/<str:main_category>/', category_view, name='category_page'),
-    path('store/kids/', kids_view, name='kids_page'),
-    
+    path('store/men/', views.mens_view, name='mens_view'),
+    path('store/<str:main_category>/', views.category_view, name='category_view'),
 ]

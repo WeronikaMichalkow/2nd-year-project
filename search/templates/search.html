@@ -41,6 +41,8 @@
                                 <p>{{ product.description|truncatechars:100 }}</p>
                                 <p><strong>Price:</strong> ${{ product.price }}</p>
                                 <a href="#" class="btn btn-dark">View Details</a>
+                                <a href="{% url 'wishlist:add_to_wishlist' product.id %}" class="btn btn-outline-dark">Add to Wishlist</a>
+
                             </div>
                         </div>
                     </div>

@@ -7,8 +7,11 @@ class Wishlist(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('customer', 'product')
-
     def __str__(self):
-        return f"{self.customer.username} - {self.product.name}"
+        return self.customer.username
+
+    class Meta:
+        
+        constraints = [
+            models.UniqueConstraint(fields=['customer', 'product'], name='unique_wishlist_item')
+        ]

@@ -1,22 +1,24 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import Http404
-from .models import Category, Product
+from django.views.generic import TemplateView
+from django.shortcuts import render
+from store.models import Product, Category
 
-# Homepage view
+
 def homepage(request):
-    return render(request, 'home.html')
+    return render(request, "home.html")
 
-# Category detail view
-def category_detail(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    return render(request, 'pages/category.html', {'category': category})
+def mens_view(request):
+    # Fetch products for the 'Men' category (or similar logic)
+    men_category = Category.objects.get(name='Men')
+    products = Product.objects.filter(category=men_category)
+    return render(request, 'mens.html', {'products': products})
 
-# Makeup category view
-def makeup_view(request):
-    try:
-        makeup_category = Category.objects.get(name="Makeup")
-        products = Product.objects.filter(category=makeup_category)
-    except Category.DoesNotExist:
-        raise Http404("Makeup category not found.")
-    
-    return render(request, 'kids.html', {'products': products})
+def kidspage(request):
+    # Fetch products and subcategories for kids category
+    category = Category.objects.get(name='Kids')  # Assuming you have a 'Kids' category
+    subcategories = category.subcategory_set.all()  # Assuming subcategories are related to Category
+    products = Product.objects.filter(category=category)  # Get all products for the kids category
+
+    return render(request, 'kids.html', {
+        'products': products,
+        'subcategories': subcategories
+    })

@@ -4,7 +4,7 @@ from reviews.views import ReviewsView  # Correct import for reviews
 from . import views
 
 urlpatterns = [
-    path('mens/', mens_view, name='menspage'),
+    path('store/men/', views.mens_view, name='mens'),
     path('', views.homepage, name='homepage'),  # Use function-based view
     path('cos_accounts/', include('cos_accounts.urls')),
     path('reviews/', include('reviews.urls')),

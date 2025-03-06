@@ -38,15 +38,16 @@
             
            
         <button class="btn btn-outline-dark" type="button">Cart</button>
-        <a href="">
+        <a href="{% url 'wishlist:wishlist_view' %}">
             <button class="btn btn-outline-dark" type="button">Wishlist</button>
         </a>
+        
 
         <a class="btn btn-outline-dark" href="{% url 'reviews' %}">Reviews</a>
 
           
         <form class="d-flex" action="{% url 'search' %}" method="GET">
-            <input class="form-control me-2" type="search" name="q" placeholder="Search" aria-label="Search">
+            <input class="form-control me-2" type="search" name="q" placeholder="Search for" aria-label="Search">
             <button class="btn btn-dark my-2 my-sm-0" type="submit">Search</button>
         </form>
     </nav>
