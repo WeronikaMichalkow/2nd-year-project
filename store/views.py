@@ -20,7 +20,7 @@ def mens_view(request):
         
         products = Product.objects.filter(category=men_category)
 
-    return render(request, 'mens.html', {
+    return render(request, 'pages/mens.html', {
         'products': products,
         'subcategories': subcategories
     })

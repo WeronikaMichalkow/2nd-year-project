@@ -7,11 +7,11 @@ class CustomUser(AbstractUser):
 
     groups = models.ManyToManyField(
         'auth.Group',
-        related_name='accounts_user_set',  
+        related_name='cos_accounts_user_set',  
         blank=True
     )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name='accounts_permission_user_set',  
+        related_name='cos_accounts_permission_user_set',  
         blank=True
     )

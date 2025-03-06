@@ -22,9 +22,9 @@
                         Welcome, {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}">Change Password</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cos_accounts:change_password' %}">Change Password</a></li>
                         <li>
-                            <form action="{% url 'accounts:logout' %}" method="POST" style="margin: 0;">
+                            <form action="{% url 'cos_accounts:logout' %}" method="POST" style="margin: 0;">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item" style="background: none; border: none;">Logout</button>
                             </form>
@@ -33,7 +33,7 @@
                     </ul>
                 </div>
             {% else %}
-            <a class="btn btn-outline-dark" href="{% url 'accounts:signin' %}" role="button">Sign In Here</a>
+            <a class="btn btn-outline-dark" href="{% url 'cos_accounts:signin' %}" role="button">Sign In</a>
             {% endif %}
             
            

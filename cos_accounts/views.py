@@ -1,16 +1,24 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, update_session_auth_hash
-from django.contrib.auth.views import LogoutView
-from django.views import View
-from django.contrib import messages
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import PasswordChangeForm
-from .forms import CustomUserCreationForm, SignInForm  # Ensure SignInForm exists
-from django.urls import reverse_lazy
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from django.views import View
+from .forms import CustomUserCreationForm, SignInForm
+from django.contrib.auth.views import LogoutView
+
+
 
 class SignUpView(View):
     def get(self, request):
         form = CustomUserCreationForm()
         return render(request, 'signup.html', {'form': form})
+    from django.contrib import messages
+
+    def some_view(request):
+        messages.success(request, "Your account has been successfully created!")
+        return redirect('home')
+
 
     def post(self, request):
         form = CustomUserCreationForm(request.POST)
@@ -18,13 +26,13 @@ class SignUpView(View):
             user = form.save()
             login(request, user)
             messages.success(request, 'Your account has been created successfully!')
-            return redirect('/')  # ✅ Redirecting to home page
-
-        for error in form.errors.values():
-            for err in error:
-                messages.error(request, err)
-
+            return redirect('home')  
+        else:
+            for error in form.errors.values():
+                for err in error:
+                    messages.error(request, err)
         return render(request, 'signup.html', {'form': form})
+
 
 class SignInView(View):
     def get(self, request):
@@ -39,16 +47,28 @@ class SignInView(View):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect(request.GET.get('next') or '/')  # ✅ Redirects to home
+                return redirect(request.GET.get('next') or 'home')
             else:
                 messages.error(request, 'Invalid username or password')
         else:
             messages.error(request, 'Please correct the errors below.')
         return render(request, 'sign_in.html', {'form': form})
 
+
 class CustomLogoutView(LogoutView):
     http_method_names = ['get', 'post']
-    next_page = reverse_lazy('/')  # Redirect to home after logout
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        messages.info(request, 'You have been logged out. Please sign in again.')
+        return redirect('home')  
+    
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        messages.info(request, 'You have been logged out. Please sign in again.')
+        return redirect('home')  
+    
+
+
 
 class ChangePasswordView(View):
     def get(self, request):
@@ -61,6 +81,5 @@ class ChangePasswordView(View):
             form.save()
             update_session_auth_hash(request, form.user)
             messages.success(request, 'Your password was successfully updated!')
-            return redirect('/')
+            return redirect('home')
         return render(request, 'change_password.html', {'form': form})
-

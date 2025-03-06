@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'store',
     'search',
     'wishlist',
-    'accounts',
     'reviews',
+    'cos_accounts',
     
 ]
 
@@ -129,7 +129,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'cos_accounts.CustomUser'
 import os
 
 MEDIA_URL = '/media/'

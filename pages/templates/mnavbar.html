@@ -22,9 +22,9 @@
                         Welcome, {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="accounts:change-password">Change Password</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cos_accounts:change_password' %}">Change Password</a></li>
                         <li>
-                            <form action="" method="POST" style="margin: 0;">
+                            <form action="{% url 'cos_accounts:logout' %}" method="POST" style="margin: 0;">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item">Logout</button>
                             </form>

@@ -1,21 +1,28 @@
-from django.views.generic import TemplateView
-from django.shortcuts import render
-from store.models import Product, Category
+from django.views.generic import TemplateView, ListView, DetailView
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from .models import Category, Product
 
 
-def homepage(request):
-    return render(request, "home.html")
+class HomeView(TemplateView):
+    template_name = 'home.html'
 
-def menspage(request):
-    return render(request, "mens.html")
+class CategoryView(DetailView):
+    model = Category
+    template_name = 'pages/category.html'
+    context_object_name = 'category'
 
-def kidspage(request):
-    # Fetch products and subcategories for kids category
-    category = Category.objects.get(name='Kids')  # Assuming you have a 'Kids' category
-    subcategories = category.subcategory_set.all()  # Assuming subcategories are related to Category
-    products = Product.objects.filter(category=category)  # Get all products for the kids category
+    def get_object(self):
+        return get_object_or_404(Category, id=self.kwargs['category_id'])
 
-    return render(request, 'kids.html', {
-        'products': products,
-        'subcategories': subcategories
-    })
+class MakeupView(ListView):
+    model = Product
+    template_name = 'kids.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        try:
+            makeup_category = Category.objects.get(name="Makeup")
+            return Product.objects.filter(category=makeup_category)
+        except Category.DoesNotExist:
+            raise Http404("Makeup category not found.")
