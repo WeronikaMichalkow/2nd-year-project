@@ -58,3 +58,25 @@ def kids_view(request):
         'products': products,
         'subcategories': subcategories
     })
+
+
+def womens_view(request):
+
+    women_category = get_object_or_404(Category, name="Women")
+
+   
+    subcategories = Category.objects.exclude(name="Women")
+
+    
+    subcategory_name = request.GET.get('subcategory')
+    if subcategory_name:
+        products = Product.objects.filter(category__name=subcategory_name)
+    else:
+        
+        products = Product.objects.filter(category=women_category)
+
+    return render(request, 'pages/womens.html', {
+        'products': products,
+        'subcategories': subcategories
+    })
+

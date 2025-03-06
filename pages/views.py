@@ -7,18 +7,32 @@ def homepage(request):
     return render(request, "home.html")
 
 def mens_view(request):
-    # Fetch products for the 'Men' category (or similar logic)
+    
     men_category = Category.objects.get(name='Men')
     products = Product.objects.filter(category=men_category)
     return render(request, 'mens.html', {'products': products})
 
 def kidspage(request):
-    # Fetch products and subcategories for kids category
-    category = Category.objects.get(name='Kids')  # Assuming you have a 'Kids' category
-    subcategories = category.subcategory_set.all()  # Assuming subcategories are related to Category
-    products = Product.objects.filter(category=category)  # Get all products for the kids category
-
+    
+    category = Category.objects.get(name='Kids')  
+    subcategories = category.subcategory_set.all()  
+    products = Product.objects.filter(category=category)  
     return render(request, 'kids.html', {
         'products': products,
         'subcategories': subcategories
     })
+
+
+
+
+
+def womens_view(request):
+    try:
+        category = Category.objects.get(name='women')  # Assuming the name is 'women'
+        products = Product.objects.filter(category=category)
+    except Category.DoesNotExist:
+            # Handle the case where the category does not exist
+        category = None
+        products = []
+
+    return render(request, 'womens.html', {'category': category, 'products': products})
