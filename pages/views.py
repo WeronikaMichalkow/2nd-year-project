@@ -12,15 +12,12 @@ def mens_view(request):
     products = Product.objects.filter(category=men_category)
     return render(request, 'mens.html', {'products': products})
 
-def kidspage(request):
+def kids_view(request):
+    kid_category = Category.objects.get(name='kids')
+    products = Product.objects.filter(category=kid_category)
+    return render(request, 'kids.html', {'products': products})
     
-    category = Category.objects.get(name='Kids')  
-    subcategories = category.subcategory_set.all()  
-    products = Product.objects.filter(category=category)  
-    return render(request, 'kids.html', {
-        'products': products,
-        'subcategories': subcategories
-    })
+    
 
 
 

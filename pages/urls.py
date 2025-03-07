@@ -8,7 +8,7 @@ urlpatterns = [
     path('', views.homepage, name='homepage'),  
     path('cos_accounts/', include('cos_accounts.urls')),
     path('reviews/', include('reviews.urls')),
-    path('kids/', kids_view, name='kidspage'),
+    path('store/kids/', kids_view, name='kids'),
     path('store/women/', views.womens_view, name='womens'),
 
 ]

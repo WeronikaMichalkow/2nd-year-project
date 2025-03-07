@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Category(models.Model):
     name = models.CharField(max_length=255)  # Category name (e.g., Men, Tops, Bottoms)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories')
@@ -30,3 +31,4 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.username
+
