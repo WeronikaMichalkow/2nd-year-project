@@ -54,7 +54,7 @@
                                 <p><strong>Price:</strong> ${{ item.product.price }}</p>
 
                                 
-                                <a href="#" class="btn btn-dark me-2">Add to Cart</a>
+                                <a href="{% url 'cart:cart_detail' %}" class="btn btn-dark me-2">Add to Cart</a>
 
                                
                                 <a href="{% url 'wishlist:remove_from_wishlist' item.product.id %}" class="btn btn-outline-danger">Remove</a>

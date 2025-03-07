@@ -30,6 +30,7 @@ urlpatterns = [
     path('', include('pages.urls')),
     path('search/', include('search.urls')),
     path('wishlist/', include('wishlist.urls', namespace='wishlist')),
+    path('cart/', include('cart.urls')),
 ] 
 
 if settings.DEBUG:

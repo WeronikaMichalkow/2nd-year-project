@@ -1,0 +1,50 @@
+{% load static %}
+{% include 'pages/header.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Products</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}"> <!-- Assuming you have a stylesheet -->
+</head>
+<body>
+    <!-- You can include your header here if needed -->
+    {% include 'pages/header.html' %}
+
+    <h1>All Products</h1>
+
+    <!-- Check if there are any products -->
+    {% if products %}
+        <div class="product-list">
+            <!-- Loop through the products and display them -->
+            {% for product in products %}
+                <div class="product-item">
+                    <h2>{{ product.name }}</h2>
+                    <p>{{ product.description }}</p>
+                    <p><strong>Price:</strong> ${{ product.price }}</p>
+                    
+                    <!-- Optionally add an image if you have one -->
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    {% endif %}
+                    
+                    <!-- Link to product detail page -->
+                    <a href="{% url 'store:product_detail' product.id %}">View details</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No products available.</p>
+    {% endif %}
+
+    <!-- Back to Home link -->
+    <br>
+    <a href="{% url 'pages:home' %}">Back to Home</a>
+
+    <!-- You can include your footer here if needed -->
+    {% include 'pages/footer.html' %}
+</body>
+</html>
+

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'wishlist',
     'reviews',
     'cos_accounts',
+    'cart',
     
 ]
 
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.no_cache.NoCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'clothingstore.urls'
@@ -123,6 +125,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -37,7 +37,12 @@
             {% endif %}
             
            
-        <button class="btn btn-outline-dark" type="button">Cart</button>
+        <a href="{% url 'cart:cart_detail' %}" class="btn btn-outline-dark">
+            <i class="fas fa-shopping-cart"></i> Cart 
+            {% if item_count > 0 %}
+                <span class="badge bg-danger">{{ item_count }}</span>
+            {% endif %}
+        </a>
         <a href="{% url 'wishlist:wishlist_view' %}">
             <button class="btn btn-outline-dark" type="button">Wishlist</button>
         </a>

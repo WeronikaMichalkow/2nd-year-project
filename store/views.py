@@ -3,6 +3,13 @@ from .models import Product, Category
 
 
 
+def all_products_view(request):
+    products = Product.objects.all()
+    # Your logic for displaying all products
+    return render(request, 'all_products.html', {'products': products})
+
+
+
 def category_view(request, main_category):
     main_category_obj = get_object_or_404(Category, name__iexact=main_category)
 
@@ -88,3 +95,32 @@ def womens_view(request):
         'subcategories': subcategories
     })
 
+
+def add_cart(request, product_id):
+    cart = request.session.get('cart', {})
+
+    if product_id in cart:
+        cart[product_id] += 1  # Increase quantity if already in cart
+    else:
+        cart[product_id] = 1  # Add new product with quantity 1
+
+    request.session['cart'] = cart  # Save cart to session
+    request.session.modified = True  # Mark session as modified
+
+    return redirect('cart_page')  # Redirect to cart page
+
+
+def cart_view(request):
+    cart = request.session.get('cart', {})
+    cart_items = []
+    total_price = 0
+
+    for product_id, quantity in cart.items():
+        try:
+            product = Product.objects.get(id=product_id)
+            cart_items.append({'product': product, 'quantity': quantity})
+            total_price += product.price * quantity
+        except Product.DoesNotExist:
+            pass
+
+    return render(request, 'cart.html', {'cart_items': cart_items, 'total_price': total_price})
