@@ -19,8 +19,8 @@ class SignUpView(View):
         if form.is_valid():
             form.save()
             messages.success(request, "Your account has been successfully created!")
-            return redirect('homepage')  # Ensure 'homepage' is correctly defined in URLs
-        return render(request, 'signup.html', {'form': form})  # Re-renders the form if invalid
+            return redirect('homepage') 
+        return render(request, 'signup.html', {'form': form}) 
     def post(self, request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -62,12 +62,11 @@ class CustomLogoutView(LogoutView):
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
         messages.info(request, 'You have been logged out. Please sign in again.')
-        return redirect('homepage')  # Correct way to redirect to 'home'
-    
+        return redirect('homepage')  
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         messages.info(request, 'You have been logged out. Please sign in again.')
-        return redirect('homepage')  # Correct way to redirect to 'home'
+        return redirect('homepage')  
     
 
 

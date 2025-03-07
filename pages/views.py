@@ -25,10 +25,10 @@ def kids_view(request):
 
 def womens_view(request):
     try:
-        category = Category.objects.get(name='women')  # Assuming the name is 'women'
+        category = Category.objects.get(name='women') 
         products = Product.objects.filter(category=category)
     except Category.DoesNotExist:
-            # Handle the case where the category does not exist
+          
         category = None
         products = []
 

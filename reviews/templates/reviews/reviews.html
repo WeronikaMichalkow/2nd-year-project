@@ -11,24 +11,23 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Reviews</h2>
 
-    <!-- Display existing reviews -->
     <div class="row justify-content-center">
         {% for review in reviews %}
         <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <div class="star-rating mb-2" style="color: gold; font-size: 20px;">
-                        <!-- Display filled stars dynamically based on rating -->
+                        
                         {% for i in "12345"|slice:":{{ review.rating }}" %}
                             ★
                         {% endfor %}
 
-                        <!-- Display empty stars for the remaining stars up to 5 -->
+                       
                         {% for i in "12345"|slice:":{{ 5 - review.rating }}" %}
                             ☆
                         {% endfor %}
                     </div>
-                    <h5 class="card-title">{{ review.user.username }}</h5> <!-- Assuming you have a user model -->
+                    <h5 class="card-title">{{ review.user.username }}</h5> 
                     <p class="card-text">"{{ review.review_text }}"</p>
                 </div>
             </div>
@@ -38,7 +37,7 @@
         {% endfor %}
     </div>
 
-    <!-- Review submission form -->
+   
     {% if user.is_authenticated %}
     <div class="mt-5">
         <h3>Submit Your Review</h3>

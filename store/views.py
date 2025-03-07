@@ -45,22 +45,22 @@ def mens_view(request):
 
 
 def kids_view(request):
-    # Fetch the 'Kids' category or return a 404 error if not found
+    
     kid_category = get_object_or_404(Category, name="Kids")
     
-    # Get all other categories excluding "Kids"
+   
     subcategories = Category.objects.exclude(name="Kids")
     
-    # Get the subcategory name from the GET request if provided
+ 
     subcategory_name = request.GET.get('subcategory')
     
-    # If subcategory is selected, filter products based on it; otherwise, fetch products for 'Kids' category
+
     if subcategory_name:
         products = Product.objects.filter(category__name=subcategory_name)
     else:
         products = Product.objects.filter(category=kid_category)
 
-    # Return the rendered page with products and subcategories
+  
     return render(request, 'kids.html', {
         'products': products,
         'subcategories': subcategories

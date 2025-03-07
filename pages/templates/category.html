@@ -27,13 +27,13 @@
 
     <nav class="category-nav bg-secondary text-center mt-2">
         <ul class="nav justify-content-center">
-            <!-- Show "All" link -->
+            
             <li class="nav-item">
                 <a class="nav-link text-white" href="#">All Products</a>
                 <a class="nav-link text-white" href="?subcategory=all">All {{ main_category.name }} Products</a>
             </li>
     
-            <!-- Loop through subcategories for navigation -->
+            
             {% for subcategory in subcategories %}
                 <li class="nav-item">
                     <a class="nav-link text-white" href="?subcategory={{ subcategory.name }}">

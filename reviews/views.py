@@ -5,7 +5,7 @@ from .forms import ReviewForm
 
 class ReviewsView(View):
     def get(self, request):
-        reviews = Review.objects.all()  # Fetch all reviews
+        reviews = Review.objects.all()  
         form = ReviewForm()  
         return render(request, 'reviews/reviews.html', {'reviews': reviews, 'form': form})
 

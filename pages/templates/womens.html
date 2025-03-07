@@ -22,9 +22,9 @@
     
     <nav class="category-nav bg-secondary text-center mt-2">
         <ul class="nav justify-content-center">
-        
-
-            
+            <li class="nav-item">
+                <a class="nav-link text-white" href="?subcategory=all">All</a>
+            </li>
             {% for subcategory in subcategories %}
                 <li class="nav-item">
                     <a class="nav-link text-white" href="?subcategory={{ subcategory.name }}">
@@ -52,7 +52,7 @@
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description }}</p>
                             <p><strong>Price:</strong> ${{ product.price }}</p>
-                            <a href="{% url 'cart:add_cart' product.id %}" class="btn btn-dark">Add to Cart</a>
+                            <a href="#" class="btn btn-dark">Add to Cart</a>
                             <a href="{% url 'wishlist:add_to_wishlist' product.id %}" class="btn btn-dark">Add to wishlist</a>
                         </div>
                     </div>
