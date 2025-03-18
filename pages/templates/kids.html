@@ -73,61 +73,34 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    console.log('JavaScript loaded');  
-
-   
-    const addToWishlistBtns = document.querySelectorAll('.add-to-wishlist');
-    addToWishlistBtns.forEach(button => {
-        button.addEventListener('click', function(event) {
-            event.preventDefault(); 
-
-            
-            const productCard = button.closest('.card');
-            
+            const addToWishlistBtns = document.querySelectorAll('.add-to-wishlist');
            
-            const sizeButtons = productCard.querySelectorAll('.size-btn');
-            let selectedSize = null;
-            sizeButtons.forEach(button => {
-                if (button.classList.contains('active')) {
-                    selectedSize = button.getAttribute('data-size-id');
-                }
+            addToWishlistBtns.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+       
+                    const productCard = button.closest('.card');
+                    const selectedSize = productCard.querySelector('.size-btn.active')?.getAttribute('data-size-id');
+       
+                    if (!selectedSize) {
+                        alert('Please select a size first.');
+                        return;
+                    }
+       
+                    const productId = productCard.querySelector('.size-btn').getAttribute('data-product-id');
+                    window.location.href = `/wishlist/add/${productId}?size=${selectedSize}`;
+                });
             });
-
-            if (!selectedSize) {
-                alert('Please select a size first.');
-                return;
-            }
-
-            
-            const productId = productCard.querySelector('.size-btn').getAttribute('data-product-id');
-            
-            
-            const wishlistUrl = `/wishlist/add/${productId}?size=${selectedSize}`;  
-            console.log('Redirecting to: ', wishlistUrl);  
-            
-            window.location.href = wishlistUrl;
+       
+            document.querySelectorAll('.size-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productCard = button.closest('.card');
+                    productCard.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                });
+            });
         });
-    });
-
-    
-    const sizeButtons = document.querySelectorAll('.size-btn');
-    sizeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Size selected: ', button.getAttribute('data-size-id'));  
-            
-          
-            const productCard = button.closest('.card');
-            const allSizeButtons = productCard.querySelectorAll('.size-btn');
-            allSizeButtons.forEach(btn => btn.classList.remove('active'));
-            
-            
-            button.classList.add('active');
-        });
-    });
-});
-
-
-    </script>
+        </script>
     
     
 </body>

@@ -22,6 +22,8 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     image = models.ImageField(null=True, blank=True)
     sizes = models.ManyToManyField(Size, related_name='products') 
+    quantity_in_stock = models.PositiveIntegerField(default=0)
+    colour = models.CharField(max_length=50, blank=True, null=True)  
 
     def __str__(self):
         return self.name

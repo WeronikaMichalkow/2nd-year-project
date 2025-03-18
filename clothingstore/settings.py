@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'cos_accounts',
     'cart',
     'loyalty',
+    'questions',
     
 ]
 

@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Category, Size
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 def all_products_view(request):
     products = Product.objects.all()
@@ -114,3 +115,128 @@ def cart_view(request):
             pass
 
     return render(request, 'cart.html', {'cart_items': cart_items, 'total_price': total_price})
+
+
+
+def stock_management(request):
+    """Only superusers can access the stock management page."""
+    
+    # Check if the user is authenticated
+    if not request.user.is_authenticated:
+        return redirect('login')  # Redirect to login page if not logged in
+
+    # Check if the user is a superuser
+    if not request.user.is_superuser:
+        return redirect('home')  # Redirect non-superusers to homepage
+
+    products = Product.objects.all()
+
+    if request.method == "POST":
+        product_id = request.POST.get('product_id')
+        new_stock = request.POST.get('new_stock')
+
+        try:
+            product = Product.objects.get(id=product_id)
+            product.quantity_in_stock = int(new_stock)
+            product.save()
+        except Product.DoesNotExist:
+            pass
+
+        return redirect('store:stock_management')
+
+    return render(request, 'stock.html', {'products': products})
+
+# View to add a product
+def add_product(request):
+    if not request.user.is_superuser:
+        return redirect('store:stock_management')
+
+    categories = Category.objects.all()  # Fetch categories for dropdown
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        quantity = request.POST.get("quantity")
+        price = request.POST.get("price")
+        category_id = request.POST.get("category")  # Get selected category ID
+        image = request.FILES.get("image")
+
+        if not (name and quantity and price and category_id):
+            return render(request, 'store/add.html', {'categories': categories, 'error': "All fields are required!"})
+
+        category = get_object_or_404(Category, id=category_id)  # Get category instance
+
+        new_product = Product(
+            name=name,
+            quantity_in_stock=quantity,
+            price=price,
+            category=category,  # Assign the correct category
+            image=image
+        )
+        new_product.save()
+
+        return redirect('store:stock_management')
+
+    return render(request, 'add.html', {'categories': categories})
+
+# View to delete a product
+def delete_product(request, product_id):
+    if not request.user.is_superuser:
+        return redirect('store:stock_management')
+
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == "POST":  # Ensure deletion only happens on POST request
+        product.delete()
+        return redirect('store:stock_management')  # Redirect after deletion
+
+    return render(request, 'homepage.html', {'product': product})  # Confirmation page
+
+
+from django.shortcuts import render
+from .models import Product, Category
+
+def filter_list(request):
+    products = Product.objects.filter(quantity_in_stock__gt=0)  # Show only in-stock products
+    categories = Category.objects.all()
+    sizes = Size.objects.all()
+
+    # Get filter parameters from request
+    category_filter = request.GET.get('category')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    colour_filter = request.GET.get('colour')
+    size_filter = request.GET.get('size')
+
+
+    colours = Product.objects.values_list('colour', flat=True).distinct()
+    
+
+    # Apply filters if parameters exist
+    if category_filter and category_filter != "all":
+        products = products.filter(category__id=category_filter)
+
+    if min_price:
+        products = products.filter(price__gte=min_price)
+
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    if colour_filter and colour_filter != "all":
+        products = products.filter(colour=colour_filter)
+
+    if size_filter and size_filter != "all":
+        products = products.filter(sizes__name=size_filter) 
+
+    
+
+    return render(request, 'filter_list.html', {
+        'products': products,
+        'categories': categories,
+        'colours': colours,
+        'sizes': sizes,
+    })
+
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, 'store/product_detail.html', {'product': product})

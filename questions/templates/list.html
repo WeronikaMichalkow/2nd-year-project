@@ -1,0 +1,23 @@
+{% extends "base.html" %}  <!-- If you have a base template -->
+
+{% block content %}
+<h2>Customer Questions</h2>
+
+{% for question in questions %}
+    <div class="question">
+        <p><strong>Question:</strong> {{ question.text }}</p>
+        
+        {% if question.answer %}
+            <p><strong>Answer:</strong> {{ question.answer }}</p>
+        {% else %}
+            <p><em>No answer yet</em></p>
+        {% endif %}
+    </div>
+    <hr>
+{% empty %}
+    <p>No questions yet.</p>
+{% endfor %}
+
+{% endblock %}
+
+

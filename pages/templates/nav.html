@@ -32,6 +32,15 @@
                 <a class="btn btn-outline-dark" href="{% url 'cos_accounts:signin' %}" role="button">Sign In</a>
             {% endif %}
 
+
+            {% if request.user.is_superuser %}
+            
+                <a href="{% url 'store:stock_management' %}" class="btn btn-outline-dark">
+                    Admin Panel
+                </a>
+            
+            {% endif %}
+
             <a href="{% url 'cart:cart_detail' %}" class="btn btn-outline-dark">
                 <i class="fas fa-shopping-cart"></i> Cart
                 {% if item_count > 0 %}
@@ -60,6 +69,7 @@
             {% endif %}
 
             <a class="btn btn-outline-dark" href="{% url 'reviews' %}">Reviews</a>
+            <a class="btn btn-outline-dark" href="{% url 'questions:list' %}">Questions</a>
 
             <form class="d-flex" action="{% url 'search' %}" method="GET">
                 <input class="form-control me-2" type="search" name="q" placeholder="Search for" aria-label="Search">
