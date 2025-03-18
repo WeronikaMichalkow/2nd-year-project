@@ -17,17 +17,9 @@
             <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <div class="star-rating mb-2" style="color: gold; font-size: 20px;">
-                        
-                        {% for i in "12345"|slice:":{{ review.rating }}" %}
-                            ★
-                        {% endfor %}
-
-                       
-                        {% for i in "12345"|slice:":{{ 5 - review.rating }}" %}
-                            ☆
-                        {% endfor %}
+                        <span class="stars" data-rating="{{ review.rating }}"></span>
                     </div>
-                    <h5 class="card-title">{{ review.user.username }}</h5> 
+                    <h5 class="card-title">{{ review.user.username }}</h5>
                     <p class="card-text">"{{ review.review_text }}"</p>
                 </div>
             </div>
@@ -37,7 +29,6 @@
         {% endfor %}
     </div>
 
-   
     {% if user.is_authenticated %}
     <div class="mt-5">
         <h3>Submit Your Review</h3>
@@ -51,5 +42,26 @@
         <p class="text-center mt-4">Please <a href="{% url 'cos_accounts:signin' %}">sign in</a> to submit a review.</p>
     {% endif %}
 </div>
+
+<script>
+    
+    document.querySelectorAll('.stars').forEach(function(starElement) {
+        let rating = parseInt(starElement.getAttribute('data-rating'));
+        let starsHtml = '';
+
+       
+        for (let i = 0; i < rating; i++) {
+            starsHtml += '★';
+        }
+
+       
+        for (let i = rating; i < 5; i++) {
+            starsHtml += '☆';
+        }
+
+        
+        starElement.innerHTML = starsHtml;
+    });
+</script>
 
 {% endblock %}

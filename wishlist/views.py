@@ -1,23 +1,40 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Wishlist
-from store.models import Product
+from store.models import Product, Size
 
 User = get_user_model()
 
 
 def add_to_wishlist(request, product_id):
+    size = request.GET.get('size') 
     product = get_object_or_404(Product, id=product_id)
-    
+
     if request.user.is_authenticated:
         customer = request.user
     else:
-        
         return redirect('login')
 
-    Wishlist.objects.get_or_create(customer=customer, product=product)
-    return redirect('wishlist:wishlist_view')
+    
+    size_id = request.GET.get('size')
 
+    if size_id:
+        size = get_object_or_404(Size, id=size_id)
+        
+    
+        wishlist_item, created = Wishlist.objects.get_or_create(
+            customer=customer, 
+            product=product,
+            size=size  
+        )
+    else:
+        
+        wishlist_item, created = Wishlist.objects.get_or_create(
+            customer=customer, 
+            product=product
+        )
+
+    return redirect('wishlist:wishlist_view')  
 
 def wishlist_view(request):
     if request.user.is_authenticated:

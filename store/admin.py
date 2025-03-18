@@ -1,10 +1,20 @@
 from django.contrib import admin
-from .models import Category, Product, Customer
+from .models import Category, Product, Customer, Size
 
-# Register models with the admin panel
-admin.site.register(Category )
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'parent'] 
+    search_fields = ['name']  
+    list_filter = ['parent']  
+    prepopulated_fields = {'name': ('parent',)}  
+
+admin.site.register(Category, CategoryAdmin)
+
+
 admin.site.register(Product)
 admin.site.register(Customer)
+admin.site.register(Size)
+
 
 
 

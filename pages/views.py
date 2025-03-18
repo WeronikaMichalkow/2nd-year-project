@@ -24,12 +24,6 @@ def kids_view(request):
 
 
 def womens_view(request):
-    try:
-        category = Category.objects.get(name='women') 
-        products = Product.objects.filter(category=category)
-    except Category.DoesNotExist:
-          
-        category = None
-        products = []
-
-    return render(request, 'womens.html', {'category': category, 'products': products})
+    women_category = Category.objects.get(name='women')
+    products = Product.objects.filter(category=women_category)
+    return render(request, 'womens.html', {'products': products})
