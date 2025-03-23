@@ -45,7 +45,6 @@
                             <p class="card-text">{{ product.description }}</p>
                             <p><strong>Price:</strong> €{{ product.price }}</p>
                             
-                          
                             <div class="size-buttons mb-3">
                                 <p><strong>Sizes:</strong></p>
                                 {% for size in product.sizes.all %}
@@ -55,8 +54,9 @@
                                 {% endfor %}
                             </div>
 
-                           
-                            <a href="{% url 'cart:add_cart' product.id %}" class="btn btn-dark">Add to Cart</a>
+                            <a href="#" class="btn btn-dark add-to-cart" data-product-id="{{ product.id }}">
+                                Add to Cart
+                            </a>
                             <a href="#" class="btn btn-dark add-to-wishlist">Add to Wishlist</a>
                         </div>
                     </div>
@@ -72,33 +72,56 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const addToWishlistBtns = document.querySelectorAll('.add-to-wishlist');
-           
+            const addToCartBtns = document.querySelectorAll('.add-to-cart');
+            const sizeButtons = document.querySelectorAll('.size-btn');
+            
+            
             addToWishlistBtns.forEach(button => {
                 button.addEventListener('click', function(event) {
                     event.preventDefault();
-       
+                    
                     const productCard = button.closest('.card');
                     const selectedSize = productCard.querySelector('.size-btn.active')?.getAttribute('data-size-id');
-       
+                    
                     if (!selectedSize) {
                         alert('Please select a size first.');
                         return;
                     }
-       
+
                     const productId = productCard.querySelector('.size-btn').getAttribute('data-product-id');
                     window.location.href = `/wishlist/add/${productId}?size=${selectedSize}`;
                 });
             });
-       
-            document.querySelectorAll('.size-btn').forEach(button => {
+
+           
+            sizeButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const productCard = button.closest('.card');
                     productCard.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                 });
             });
+
+           
+            addToCartBtns.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+
+                    const productCard = button.closest('.card');
+                    const selectedSize = productCard.querySelector('.size-btn.active')?.getAttribute('data-size-id');
+
+                    if (!selectedSize) {
+                        alert('Please select a size first.');
+                        return;
+                    }
+
+                    const productId = button.getAttribute('data-product-id');
+                    window.location.href = `/cart/add/${productId}?size=${selectedSize}`;
+                });
+            });
         });
-        </script>
+    </script>
+
 </body>
 
 </html>
