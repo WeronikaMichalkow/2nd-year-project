@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Wishlist
 from store.models import Product, Size
 
+
 User = get_user_model()
 
 
@@ -13,7 +14,7 @@ def add_to_wishlist(request, product_id):
     if request.user.is_authenticated:
         customer = request.user
     else:
-        return redirect('login')
+        return redirect('cos_accounts:signup')
 
     
     size_id = request.GET.get('size')

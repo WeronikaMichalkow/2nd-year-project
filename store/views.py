@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Category, Size
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
+from django.urls import reverse
+
 
 def all_products_view(request):
     products = Product.objects.all()
@@ -240,3 +243,30 @@ def filter_list(request):
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     return render(request, 'store/product_detail.html', {'product': product})
+
+
+
+def stock_search(request):
+    query = request.GET.get('q', '')  # Default to an empty string if query is None
+
+    if request.method == "POST":
+        product_id = request.POST.get('product_id')
+        new_stock = request.POST.get('new_stock')
+
+        try:
+            product = Product.objects.get(id=product_id)
+            product.quantity_in_stock = int(new_stock)
+            product.save()
+        except Product.DoesNotExist:
+            pass
+
+        # Redirect with query appended to the URL
+        return redirect('store:stock_management')
+
+    # Perform search only if query is not empty
+    if query:
+        products = Product.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    else:
+        products = Product.objects.none()
+
+    return render(request, 'stock.html', {'products': products, 'query': query})

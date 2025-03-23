@@ -1,8 +1,6 @@
 from django.urls import path
 from . import views
-from .views import stock_management, add_product, delete_product, filter_list, product_detail
-
-
+from .views import stock_management, add_product, delete_product, filter_list, product_detail, stock_search 
 
 app_name = 'store'
 
@@ -14,5 +12,6 @@ urlpatterns = [
     path('admin/stock/add/', add_product, name='add_product'),
     path('admin/stock/delete/<int:product_id>/', delete_product, name='delete_product'),
     path('filter/', filter_list, name='filter_list'),
-     path('products/<int:product_id>/', product_detail, name='product_detail'),
+    path('products/<int:product_id>/', product_detail, name='product_detail'),
+    path('admin/stock/search/', views.stock_search, name='stocksearch'),
 ]
