@@ -77,6 +77,12 @@
                             <p class="card-text">Please review your cart before proceeding with the payment.</p>
                             <hr>
                             <p><strong>Total: €{{ total }}</strong></p>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <label for="requested_points">Loyalty Points to Apply: (Max: {{ loyalty_points }})</label>
+                                <input type="number" name="requested_points" id="requested_points" max="{{ loyalty_points }}" min="0" value="0" required>
+                                <button type="submit">Apply Loyalty Points</button>
+                            </form>
 
                             <a href="#" class="btn btn-primary w-100 mt-3 mb-3" id="proceedToCheckout">Proceed to Checkout</a>
                             
