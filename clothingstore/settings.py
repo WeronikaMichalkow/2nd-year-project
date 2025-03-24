@@ -74,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'cart.context_processors.counter',
             ],
         },
     },
@@ -140,3 +141,6 @@ import os
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STRIPE_SECRET_KEY = 'sk_test_51QL0SuP176sP7FMhgI6sOlnP0nbCKMPKzbfoKqPSjbxPSF5lGHkumtfAbWBM55VYhzpMqVfdIdDXwz4O5RtLl9KZ00VV6kbSkc'
+STRIPE_PUBLISHABLE_KEY = 'pk_test_51QL0SuP176sP7FMhWxe8ZOjTziV5L85rHixKNPQJU5wyvb3lJr5i8nzY6PntEw5NSmPHdfvn6WxaiNfi0FzOISwf00P81gX65m'
