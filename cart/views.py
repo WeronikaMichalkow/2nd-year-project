@@ -73,11 +73,11 @@ def cart_detail(request):
     # Get user's loyalty points and calculate discount
     if request.user.is_authenticated:
         loyalty_account, _ = Loyalty.objects.get_or_create(user=request.user)
-        discount = loyalty_account.convert_points_to_discount()
+        discount = loyalty_account.convert_points_to_discount(total)  # Pass cart total to get the correct discount
     else:
         discount = 0
 
-    final_total = total - Decimal(discount) if total >= Decimal(discount) else Decimal(0)
+    final_total = total - discount if total >= discount else 0
 
     # Stripe Payment Integration
     stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -107,7 +107,7 @@ def cart_detail(request):
             )
 
             # Deduct used points after successful payment
-            loyalty_account.points = max(0, loyalty_account.points - int(discount / 0.1))
+            loyalty_account.points = max(0, loyalty_account.points - int(discount))  # Deduct the discount from points
             loyalty_account.save()
 
             return redirect(checkout_session.url, code=303)
@@ -126,6 +126,7 @@ def cart_detail(request):
         'discount': discount,
         'final_total': final_total,
     })
+
 
 def cart_view(request, product_id):
     
