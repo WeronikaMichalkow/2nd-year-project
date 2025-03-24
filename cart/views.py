@@ -1,10 +1,12 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from store.models import Product, Size
 from cart.models import Cart, CartItem 
+from loyalty.models import Loyalty
 from django.core.exceptions import ObjectDoesNotExist
 import stripe
 from django.conf import settings
 from django.urls import reverse
+from decimal import Decimal
 
 
 
@@ -68,14 +70,22 @@ def cart_detail(request):
         cart_items = []
         total = 0
 
+    # Get user's loyalty points and calculate discount
+    if request.user.is_authenticated:
+        loyalty_account, _ = Loyalty.objects.get_or_create(user=request.user)
+        discount = loyalty_account.convert_points_to_discount()
+    else:
+        discount = 0
+
+    final_total = total - Decimal(discount) if total >= Decimal(discount) else Decimal(0)
+
     # Stripe Payment Integration
     stripe.api_key = settings.STRIPE_SECRET_KEY
-    stripe_total = int(total * 100)  # Convert total to cents
+    stripe_total = int(final_total * 100)  # Convert to cents
     description = 'Online Shop - New Order'
 
     if request.method == 'POST':
         try:
-            # Create a new Stripe Checkout session
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -92,23 +102,30 @@ def cart_detail(request):
                 billing_address_collection='required',
                 shipping_address_collection={},
                 payment_intent_data={'description': description},
-                success_url=request.build_absolute_uri(reverse('store:all_products')), 
+                success_url=request.build_absolute_uri(reverse('cart:payment_success')),  
                 cancel_url=request.build_absolute_uri(reverse('cart:cart_detail')),    
             )
-            # Redirect to Stripe Checkout
+
+            # Deduct used points after successful payment
+            loyalty_account.points = max(0, loyalty_account.points - int(discount / 0.1))
+            loyalty_account.save()
+
             return redirect(checkout_session.url, code=303)
         except Exception as e:
             return render(request, 'cart.html', {
                 'cart_items': cart_items,
                 'total': total,
-                'error': str(e),  # Display error if there's an issue with Stripe
+                'discount': discount,
+                'final_total': final_total,
+                'error': str(e),  
             })
 
     return render(request, 'cart.html', {
         'cart_items': cart_items, 
-        'total': total
+        'total': total,
+        'discount': discount,
+        'final_total': final_total,
     })
-
 
 def cart_view(request, product_id):
     
@@ -142,3 +159,10 @@ def full_remove(request, product_id):
     cart_item.delete()
     return redirect('cart:cart_detail')
 
+def payment_success(request):
+    if request.user.is_authenticated:
+        loyalty_account, _ = Loyalty.objects.get_or_create(user=request.user)
+        loyalty_account.points += 10  # Earn 10 points per purchase
+        loyalty_account.save()
+
+    return redirect('store:all_products')  # Redirect to store page after payment

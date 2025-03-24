@@ -92,6 +92,12 @@
                             {% endif %}
                             <div class="text-center">
                                 <a href="{% url 'store:all_products' %}" class="btn btn-secondary w-100 mt-3">Continue Shopping</a>
+                                <p><strong>Total: €{{ total }}</strong></p>
+                                {% if discount > 0 %}
+                                    <p><strong>Loyalty Discount: -€{{ discount }}</strong></p>
+                                {% endif %}
+                                <p><strong>Final Total: €{{ final_total }}</strong></p>
+
                             </div>
                         </div>
                     </div>
@@ -107,6 +113,7 @@
             this.style.display = "none";
         });
     </script>
+    
 
 
 {% endblock %}
