@@ -1,13 +1,12 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title>Add Product - Admin Panel</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-
 <body>
     <main style="padding-top: 90px;">
         <div class="container mt-4">
@@ -24,12 +23,12 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Quantity</label>
-                            <input type="number" name="quantity" class="form-control" placeholder="Stock quantity" required>
+                            <label class="form-label fw-bold">Price (€)</label>
+                            <input type="number" name="price" class="form-control" placeholder="Enter price" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Price (€)</label>
-                                <input type="number" name="price" class="form-control" placeholder="Enter price" required>
+                            <label class="form-label fw-bold">Colour</label>
+                            <input type="text" name="colour" class="form-control" placeholder="Enter product colour">
                         </div>
                     </div>
 
@@ -49,10 +48,24 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Colour</label>
-                        <input type="text" name="name" class="form-control" placeholder="Enter product colour">
+                        <label class="form-label fw-bold">Sizes</label>
+                        <select name="sizes" class="form-select" multiple required>
+                            {% for size in sizes %}
+                                <option value="{{ size.id }}">{{ size.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    
+
+                    <!-- Quantity input fields for selected sizes -->
+                    <div id="quantity-fields" class="mb-3">
+                        <label class="form-label fw-bold">Quantity for Sizes</label>
+                        {% for size in sizes %}
+                            <div class="size-quantity" id="size-{{ size.id }}" style="display:none;">
+                                <label for="quantity_{{ size.id }}">Quantity for {{ size.name }}</label>
+                                <input type="number" name="quantity_{{ size.id }}" id="quantity_{{ size.id }}" class="form-control" min="0" placeholder="Enter quantity for {{ size.name }}">
+                            </div>
+                        {% endfor %}
+                    </div>
 
                     <div class="text-center">
                         <button type="submit" class="btn btn-success w-50">Add Product</button>
@@ -67,6 +80,27 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script>
+        // JavaScript to toggle visibility of quantity inputs based on selected sizes
+        const sizeSelect = document.querySelector('select[name="sizes"]');
+        const quantityFields = document.querySelectorAll('.size-quantity');
 
+        sizeSelect.addEventListener('change', function() {
+            // Hide all quantity fields first
+            quantityFields.forEach(field => field.style.display = 'none');
+            
+            // Show the quantity fields for selected sizes
+            const selectedSizeIds = Array.from(sizeSelect.selectedOptions).map(option => option.value);
+            selectedSizeIds.forEach(sizeId => {
+                const sizeField = document.getElementById(`size-${sizeId}`);
+                if (sizeField) {
+                    sizeField.style.display = 'block';
+                }
+            });
+        });
+        
+        // Trigger the event on page load to show already selected sizes' quantity fields if any
+        sizeSelect.dispatchEvent(new Event('change'));
+    </script>
+</body>
 </html>

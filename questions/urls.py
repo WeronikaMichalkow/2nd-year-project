@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import askQ, listQ, answerQ
 
+
 app_name = 'questions'  # 👈 Add this line to define the namespace
 
 urlpatterns = [

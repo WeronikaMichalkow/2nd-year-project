@@ -22,8 +22,8 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     image = models.ImageField(null=True, blank=True)
     sizes = models.ManyToManyField(Size, related_name='products') 
-    quantity_in_stock = models.PositiveIntegerField(default=0)
     colour = models.CharField(max_length=50, blank=True, null=True)  
+    quantity_in_stock = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -40,3 +40,12 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.username
+
+
+class ProductSize(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="size_stock")
+    size = models.ForeignKey(Size, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.product.name + " - " + self.size.name + " (" + str(self.quantity) + ")"

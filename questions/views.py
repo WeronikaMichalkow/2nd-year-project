@@ -36,7 +36,7 @@ def answerQ(request, question_id):
         if form.is_valid():
             question.answered = now()  # Set the answer time
             form.save()
-            return redirect('questions:list')
+            return redirect('questions:answer_q')
     else:
         form = form_for_answer(instance=question)
 
