@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from .models import Loyalty
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt  # Import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt  
 from django.http import HttpResponse
 
 @csrf_exempt  
