@@ -1,4 +1,3 @@
-# wishlist/models.py
 from django.db import models
 from django.conf import settings
 from store.models import Product

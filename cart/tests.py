@@ -19,7 +19,7 @@ class CartTests(TestCase):
 
     def test_cart_add(self):
         response = self.client.get(reverse('cart:add_cart', args=[self.product.id]))
-        self.assertEqual(response.status_code, 302)  # Redirect to cart detail
+        self.assertEqual(response.status_code, 302)  
         self.assertTrue(CartItem.objects.filter(product=self.product).exists())
 
     def test_cart_detail_view(self):
@@ -34,7 +34,7 @@ class CartTests(TestCase):
 
     def test_cart_remove(self):
         response = self.client.get(reverse('cart:cart_remove', args=[self.product.id]))
-        self.assertEqual(response.status_code, 302)  # Redirect to cart detail
+        self.assertEqual(response.status_code, 302)  
         cart_item = CartItem.objects.get(product=self.product, cart=self.cart)
         self.assertEqual(cart_item.quantity, 0 if cart_item.quantity == 1 else cart_item.quantity - 1)
 

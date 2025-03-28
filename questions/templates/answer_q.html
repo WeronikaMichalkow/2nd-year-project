@@ -24,7 +24,7 @@
             <h4><strong>Question:</strong> {{ question.text }}</h4>
             <form method="POST">
                 {% csrf_token %}
-                {{ form.as_p }}  <!-- Display the form -->
+                {{ form.as_p }}  
                 <div class="text-center">
                     <button type="submit" class="btn btn-success">Submit Answer</button>
                 </div>

@@ -9,10 +9,9 @@ def askQ(request):
         form = form_for_question(request.POST)
         if form.is_valid():
             question = form.save(commit=False)
-            question.user = request.user  # Assuming the user is logged in
+            question.user = request.user  
             question.save()
-            return redirect('questions:list')  # Correct way to redirect with app_name namespace
-    else:
+            return redirect('questions:list')  
         form = form_for_question()
 
     return render(request, 'ask_q.html', {'form': form})
@@ -20,21 +19,21 @@ def askQ(request):
 
 def listQ(request):
     questions = Question.objects.all()
-    return render(request, 'list.html', {'questions': questions})  # ✅ Rendering list.html
+    return render(request, 'list.html', {'questions': questions})  
 
 
 
 def answerQ(request, question_id):
     question = get_object_or_404(Question, id=question_id)
 
-    # Check if the user is an admin (staff user)
+    
     if not request.user.is_staff:
-        return redirect('questions:list')  # Redirect non-admin users to the list of questions
+        return redirect('questions:list')  
     
     if request.method == "POST":
         form = form_for_answer(request.POST, instance=question)
         if form.is_valid():
-            question.answered = now()  # Set the answer time
+            question.answered = now()  
             form.save()
             return redirect('questions:answer_q')
     else:

@@ -7,6 +7,8 @@ import stripe
 from django.conf import settings
 from django.urls import reverse
 from decimal import Decimal
+from order.models import Order, OrderItem
+from stripe import StripeError
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
@@ -48,7 +50,7 @@ def add_cart(request, product_id):
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
-        size=size  # Correct size object
+        size=size  
     )
 
     if not created:
@@ -173,3 +175,84 @@ def payment_success(request):
             loyalty_account.save()
 
     return redirect('homepage')  
+
+
+def empty_cart(request):
+    try:
+        cart = Cart.objects.get(cart_id=_cart_id(request))
+        cart_items = cart.cartitem_set.all()
+
+        if cart_items.exists():
+            logger.info(f"Deleting {cart_items.count()} cart items for cart ID: {cart.cart_id}")
+            cart_items.delete()  
+        
+        logger.info(f"Deleting cart with ID: {cart.cart_id}")
+        cart.delete()  
+        
+    except Cart.DoesNotExist:
+        logger.info("Cart does not exist, skipping deletion.")
+        pass
+    
+    return redirect('cart:cart_detail')
+
+
+def create_order(request):
+    try:
+        session_id = request.GET.get('session_id')
+        if not session_id:
+            raise ValueError("Session ID not found.")
+
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+        except StripeError:
+            return redirect("store:all_products")
+
+        customer_details = session.customer_details
+        if not customer_details or not customer_details.address:
+            raise ValueError("Missing information in the Stripe session.")
+
+        order_details = Order.objects.create(
+            token=session.id,
+            total=session.amount_total / 100,
+            emailAddress=customer_details.email,
+            billingName=customer_details.name,
+            billingAddress1=customer_details.address.line1,
+            billingCity=customer_details.address.city,
+            billingPostcode=customer_details.address.postal_code,
+            billingCountry=customer_details.address.country,
+            shippingName=customer_details.name,
+            shippingAddress1=customer_details.address.line1,
+            shippingCity=customer_details.address.city,
+            shippingPostcode=customer_details.address.postal_code,
+            shippingCountry=customer_details.address.country,
+        )
+
+        try:
+            cart = Cart.objects.get(cart_id=_cart_id(request))
+            cart_items = CartItem.objects.filter(cart=cart, active=True)
+
+            for item in cart_items:
+                OrderItem.objects.create(
+                    product=item.product.name,
+                    quantity=item.quantity,
+                    price=item.product.price,
+                    order=order_details
+                )
+
+                
+                product = Product.objects.get(id=item.product.id)
+                product.stock = max(0, product.stock - item.quantity)
+                product.save()
+
+        except ObjectDoesNotExist:
+            pass
+
+        
+        empty_cart(request)
+
+        return redirect('store:all_products')
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return redirect("store:all_products")
+

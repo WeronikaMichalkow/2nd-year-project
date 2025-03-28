@@ -1,4 +1,4 @@
-{% load static %}  <!-- Make sure this is at the top to load static files -->
+{% load static %}  
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +22,7 @@
     <div class="container mt-4">
         <h2 class="text-center mb-4">Ask a Question</h2>
 
-        <!-- Ask a Question Form -->
+        
         <div class="card p-4 shadow-sm mb-5">
             <form method="POST" action="{% url 'questions:ask_q' %}">
                 {% csrf_token %}
@@ -36,7 +36,7 @@
             </form>
         </div>
 
-        <!-- List of Customer Questions -->
+        
         <h2 class="text-center mb-4">Customer Questions</h2>
 
         {% if questions %}
@@ -54,7 +54,7 @@
                             {% else %}
                                 <p class="text-muted"><em>No answer yet</em></p>
 
-                                <!-- Only admins can answer the question -->
+                                
                                 {% if request.user.is_staff %}
                                     <form method="POST" action="{% url 'questions:answer_q' question.id %}">
                                         {% csrf_token %}
@@ -73,7 +73,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <!-- No questions message -->
+            
             <div class="text-center p-5 mt-4" style="background-color: #333; color: white; border-radius: 8px;">
                 <p class="lead">No questions have been asked yet.</p>
             </div>
