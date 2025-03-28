@@ -33,6 +33,7 @@ urlpatterns = [
     path('cart/', include('cart.urls')),
     path('loyalty/', include('loyalty.urls', namespace='loyalty')),
     path('questions/', include('questions.urls', namespace='questions')),  
+    path('order/', include('order.urls')),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

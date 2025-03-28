@@ -256,3 +256,6 @@ def create_order(request):
         print(f"Unexpected error: {e}")
         return redirect("store:all_products")
 
+
+
+
