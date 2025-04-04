@@ -34,7 +34,9 @@
         <h3>Submit Your Review</h3>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.product.label_tag }} {{ form.product }}  <!-- Add this to show product dropdown -->
+            {{ form.review_text.label_tag }} {{ form.review_text }}
+            {{ form.rating.label_tag }} {{ form.rating }}
             <button type="submit" class="btn btn-dark mt-3">Submit Review</button>
         </form>
     </div>
