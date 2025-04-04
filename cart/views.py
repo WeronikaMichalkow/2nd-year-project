@@ -72,8 +72,7 @@ def cart_detail(request):
 
     discount = 0
     final_total = total
-
-    cashback_points = 0  
+    cashback_points = 0
 
     if request.user.is_authenticated:
         loyalty_account, _ = Loyalty.objects.get_or_create(user=request.user)
@@ -83,16 +82,19 @@ def cart_detail(request):
     if request.method == 'POST' and loyalty_account:
         requested_points = int(request.POST.get('requested_points', 0))
         if requested_points > 0:
-            
             discount, cashback_points = loyalty_account.convert_points_to_discount(requested_points, total)
 
         final_total = total - discount if total >= discount else 0
 
-       
+        # Deduct used points immediately
         loyalty_account.points = max(0, loyalty_account.points - discount)
         loyalty_account.save()
 
-       
+        # ✅ Store loyalty info in session (used & cashback points)
+        request.session['used_loyalty_points'] = int(discount)
+        request.session['cashback_points'] = cashback_points
+        request.session['total_amount'] = float(final_total)
+
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
@@ -102,7 +104,7 @@ def cart_detail(request):
                         'product_data': {
                             'name': 'Shopping Cart',
                         },
-                        'unit_amount': int(final_total * 100),  
+                        'unit_amount': int(final_total * 100),
                     },
                     'quantity': 1,
                 },
@@ -112,11 +114,6 @@ def cart_detail(request):
             cancel_url=request.build_absolute_uri('/cart/cancel/'),
         )
 
-        
-        if cashback_points > 0:
-            loyalty_account.points += cashback_points
-            loyalty_account.save()
-
         return redirect(checkout_session.url)
 
     return render(request, 'cart.html', {
@@ -125,9 +122,8 @@ def cart_detail(request):
         'discount': discount,
         'final_total': final_total,
         'loyalty_points': loyalty_account.points if loyalty_account else 0,
-        'cashback_points': cashback_points  
+        'cashback_points': cashback_points
     })
-
 
 
 def cart_view(request, product_id):
@@ -165,16 +161,25 @@ def full_remove(request, product_id):
 def payment_success(request):
     if request.user.is_authenticated:
         loyalty_account, _ = Loyalty.objects.get_or_create(user=request.user)
-        
-       
-        total_amount_spent = request.session.get('total_amount', 0)  
-        
+
+        # ✅ Retrieve and clear session-stored loyalty data
+        discount_used = request.session.pop('used_loyalty_points', 0)
+        cashback_points = request.session.pop('cashback_points', 0)
+        total_amount_spent = request.session.pop('total_amount', 0)
+
+        # ✅ Give cashback only after successful payment
+        if cashback_points > 0:
+            loyalty_account.points += cashback_points
+            loyalty_account.save()
+
+        # ✅ Award points based on purchase amount (optional)
         if total_amount_spent > 0:
-            points_earned = int(total_amount_spent * 0.1) 
+            points_earned = int(total_amount_spent * 0.1)
             loyalty_account.points += points_earned
             loyalty_account.save()
 
-    return redirect('homepage')  
+    return redirect('homepage')
+
 
 
 def empty_cart(request):
