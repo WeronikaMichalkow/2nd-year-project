@@ -6,7 +6,6 @@ class ReviewForm(forms.ModelForm):
     product = forms.ModelChoiceField(
         queryset=Product.objects.all(),
         required=False, 
-        empty_label="General (No specific product)",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
