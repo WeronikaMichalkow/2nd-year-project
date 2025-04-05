@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from store.models import Product  # ✅ Import the correct Product model
+from store.models import Product  
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -10,7 +10,7 @@ class Category(models.Model):
 
 class Review(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews', null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
     review_text = models.TextField()
     rating = models.PositiveIntegerField(null=True)
 

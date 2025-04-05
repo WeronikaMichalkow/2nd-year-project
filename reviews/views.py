@@ -18,10 +18,12 @@ class ReviewsView(View):
             if form.is_valid():
                 review = form.save(commit=False)
                 review.user = request.user
+               
+                review.product = form.cleaned_data.get('product')
                 review.save()
-                return redirect('reviews')  # or redirect to product-specific page
-        return redirect('accounts:signin')
-    
+                return redirect('reviews')
+        return redirect('cos_accounts:signin')
+        
 @method_decorator(csrf_exempt, name='dispatch')
 class SubmitReviewView(View):
     def post(self, request):
@@ -32,14 +34,14 @@ class SubmitReviewView(View):
         rating = request.POST.get('rating')
         product_id = request.POST.get('product')
 
-        # ✅ Get the Product instance properly
+        
         product = get_object_or_404(Product, id=product_id)
 
-        # ✅ Create and save the Review
+     
         if review_text and rating:
             Review.objects.create(
                 user=request.user,
-                product=product,  # <- this is now the correct Product instance
+                product=product, 
                 review_text=review_text,
                 rating=rating
             )

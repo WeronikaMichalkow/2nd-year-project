@@ -19,6 +19,7 @@
                         Welcome, {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{% url 'fitting:profile' %}">My Profile</a></li>
                         <li><a class="dropdown-item" href="{% url 'cos_accounts:change_password' %}">Change Password</a></li>
                         <li>
                             <form action="{% url 'cos_accounts:logout' %}" method="POST" style="margin: 0;">
@@ -69,7 +70,18 @@
             {% endif %}
 
             <a class="btn btn-outline-dark" href="{% url 'reviews' %}">Reviews</a>
-            <a class="btn btn-outline-dark" href="{% url 'questions:list' %}">Questions</a>
+            <div class="dropdown">
+                <a class="btn btn-outline-dark dropdown-toggle" style="font-size: 13px; padding: 4px 10px;" href="#" role="button" id="exploreDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Express concerns <br>Express yourself
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exploreDropdown">
+                    <li><a class="dropdown-item" href="{% url 'questions:list' %}">Questions</a></li>
+                    <li><a class="dropdown-item" href="{% url 'stylequiz:quiz' %}">Express Yourself</a></li>
+                </ul>
+            </div>
+            
+            
+
 
             <form class="d-flex" action="{% url 'search' %}" method="GET">
                 <input class="form-control me-2" type="search" name="q" placeholder="Search for" aria-label="Search">

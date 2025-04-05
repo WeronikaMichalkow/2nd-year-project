@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'loyalty',
     'questions',
     'order',
+    'fitting',
+    'stylequiz',
     
 ]
 

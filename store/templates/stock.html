@@ -17,13 +17,10 @@
             <div class="text-end mb-3">
                 <a href="{% url 'store:add_product' %}" class="btn btn-dark">Add Product</a>
             </div>
-            
-                
             <div class="text-end mb-3">
                 <a href="{% url 'questions:list' %}" class="btn btn-dark">Answer Questions</a>
             </div>
-                    
-            
+        </div>
     </nav>
 
     <main style="padding-top: 90px;">
@@ -54,7 +51,11 @@
                                 <tr {% if product.quantity_in_stock < 5 %} style="background-color: #ffcccc;" {% endif %}>
                                     <td class="fw-bold">{{ product.name }}</td>
                                     <td>
-                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 60px; height: 60px; object-fit: cover;">
+                                        {% if product.image %}
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 60px; height: 60px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="{% static 'images/placeholder.png' %}" alt="No image" style="width: 60px; height: 60px; object-fit: cover;">
+                                        {% endif %}
                                     </td>
                                     <td class="fs-5">
                                         <ul style="list-style-type: none; padding-left: 0;">

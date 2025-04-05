@@ -14,15 +14,15 @@ def category_view(request, main_category):
     main_category_obj = get_object_or_404(Category, name__iexact=main_category)
     subcategories = Category.objects.filter(parent=main_category_obj)
 
-    # Capture the subcategory parameter from the URL
+   
     subcategory_name = request.GET.get('subcategory')
 
-    # Show all products if 'all' is selected or if there's no subcategory specified
+
     if subcategory_name == "all" or not subcategory_name:
         all_categories = [main_category_obj] + list(subcategories)
         products = Product.objects.filter(category__in=all_categories)
     else:
-        # Show products in the selected subcategory
+      
         subcategory = get_object_or_404(Category, name__iexact=subcategory_name, parent=main_category_obj)
         products = Product.objects.filter(category=subcategory)
 
@@ -30,7 +30,7 @@ def category_view(request, main_category):
         'main_category': main_category_obj,
         'subcategories': subcategories,
         'products': products,
-        'selected_subcategory': subcategory_name  # Pass the selected subcategory to the template
+        'selected_subcategory': subcategory_name  
     })
 
 
@@ -94,14 +94,14 @@ def add_cart(request, product_id):
     cart = request.session.get('cart', {})
 
     if product_id in cart:
-        cart[product_id] += 1  # Increase quantity if already in cart
+        cart[product_id] += 1 
     else:
-        cart[product_id] = 1  # Add new product with quantity 1
+        cart[product_id] = 1  
 
-    request.session['cart'] = cart  # Save cart to session
-    request.session.modified = True  # Mark session as modified
+    request.session['cart'] = cart  
+    request.session.modified = True  
 
-    return redirect('cart_page')  # Redirect to cart page
+    return redirect('cart_page')  
 
 
 def cart_view(request):
@@ -124,31 +124,31 @@ def cart_view(request):
 def stock_management(request):
     """Only superusers can access the stock management page."""
     
-    # Check if the user is authenticated
+   
     if not request.user.is_authenticated:
-        return redirect('login')  # Redirect to login page if not logged in
+        return redirect('login')  
 
-    # Check if the user is a superuser
+   
     if not request.user.is_superuser:
-        return redirect('home')  # Redirect non-superusers to homepage
+        return redirect('home')  
 
     products = Product.objects.prefetch_related("size_stock__size").all()
     sizes = Size.objects.all()
 
     return render(request, 'stock.html', {'products': products, 'sizes': sizes})
 
-# View to add a product
+
 def add_product(request):
     if not request.user.is_superuser:
         return redirect('store:stock_management')
 
-    categories = Category.objects.all()  # Fetch categories for dropdown
-    sizes = Size.objects.all()  # Fetch all sizes
+    categories = Category.objects.all() 
+    sizes = Size.objects.all()  
 
     if request.method == "POST":
         name = request.POST.get("name")
         price = request.POST.get("price")
-        category_id = request.POST.get("category")  # Get selected category ID
+        category_id = request.POST.get("category") 
         image = request.FILES.get("image")
         colour = request.POST.get("colour")
         quantity = request.POST.get("quantity")
@@ -156,7 +156,7 @@ def add_product(request):
         if not (name and price and category_id and quantity):
             return render(request, 'stock.html', {'categories': categories, 'sizes': sizes, 'error': "All fields are required!"})
 
-        category = get_object_or_404(Category, id=category_id)  # Get category instance
+        category = get_object_or_404(Category, id=category_id)  
 
         new_product = Product(
             name=name,
@@ -167,7 +167,7 @@ def add_product(request):
         )
         new_product.save()
 
-        # Loop over sizes and add the product size stock
+      
         for size in sizes:
             quantity_size = request.POST.get(f"quantity_{size.id}")
             if quantity_size:
@@ -183,29 +183,29 @@ def add_product(request):
     return render(request, 'add.html', {'categories': categories, 'sizes': sizes})
 
 
-# View to delete a product
+
 def delete_product(request, product_id):
     if not request.user.is_superuser:
         return redirect('store:stock_management')
 
     product = get_object_or_404(Product, id=product_id)
 
-    if request.method == "POST":  # Ensure deletion only happens on POST request
+    if request.method == "POST":  
         product.delete()
-        return redirect('store:stock_management')  # Redirect after deletion
+        return redirect('store:stock_management')  
 
-    return render(request, 'homepage.html', {'product': product})  # Confirmation page
+    return render(request, 'homepage.html', {'product': product}) 
 
 
 from django.shortcuts import render
 from .models import Product, Category
 
 def filter_list(request):
-    products = Product.objects.filter(quantity_in_stock__gt=0)  # Show only in-stock products
+    products = Product.objects.filter(quantity_in_stock__gt=0)  
     categories = Category.objects.all()
     sizes = Size.objects.all()
 
-    # Get filter parameters from request
+   
     category_filter = request.GET.get('category')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
@@ -216,7 +216,7 @@ def filter_list(request):
     colours = Product.objects.values_list('colour', flat=True).distinct()
     
 
-    # Apply filters if parameters exist
+    
     if category_filter and category_filter != "all":
         products = products.filter(category__id=category_filter)
 
@@ -249,7 +249,7 @@ def product_detail(request, product_id):
 
 
 def stock_search(request):
-    query = request.GET.get('q', '')  # Default to an empty string if query is None
+    query = request.GET.get('q', '')  
 
     if request.method == "POST":
         product_id = request.POST.get('product_id')
@@ -262,10 +262,10 @@ def stock_search(request):
         except Product.DoesNotExist:
             pass
 
-        # Redirect with query appended to the URL
+      
         return redirect('store:stock_management')
 
-    # Perform search only if query is not empty
+  
     if query:
         products = Product.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
     else:
@@ -277,45 +277,45 @@ def stock_search(request):
 
 
 def update_stock(request):
-    # Check if the user is logged in and is a superuser
+   
     if not request.user.is_authenticated:
-        return redirect('login')  # Redirect to login if not logged in
+        return redirect('login')  
     if not request.user.is_superuser:
-        return redirect('home')  # Show 403 Forbidden page
+        return redirect('home') 
 
     if request.method == "POST":
-        product_id = request.POST.get('product_id')  # Get the product ID
+        product_id = request.POST.get('product_id') 
         
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return HttpResponseNotFound("Product not found")
 
-        # Loop through all sizes of the product
+      
         for size in product.sizes.all():
             size_field_name = f"size_{size.id}"
             new_stock = request.POST.get(size_field_name)
 
-            # If new stock is provided and is a valid number, update the stock
+          
             if new_stock:
                 try:
-                    new_stock = int(new_stock)  # Convert to integer
+                    new_stock = int(new_stock) 
                 except ValueError:
-                    continue  # If value is not a valid integer, skip this size
+                    continue  
 
-                # Check if the product-size entry already exists
+               
                 product_size, created = ProductSize.objects.get_or_create(
                     product=product, size=size,
-                    defaults={'quantity': new_stock}  # If created, set the initial stock quantity
+                    defaults={'quantity': new_stock} 
                 )
 
                 if not created:
-                    # If the entry already exists, update the quantity
+                   
                     product_size.quantity = new_stock
                     product_size.save()
 
-        # After updating, redirect back to the stock management page
+      
         return redirect('store:stock_management')
 
-    return redirect('store:stock_management')  # Redirect if not a POST request
+    return redirect('store:stock_management')  
 

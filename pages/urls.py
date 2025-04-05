@@ -11,6 +11,9 @@ urlpatterns = [
     path('store/kids/', kids_view, name='kids'),
     path('store/women/', womens_view, name='womens'),
     path('loyalty/', include('loyalty.urls')), 
+    path('fitting/', include('fitting.urls')),  
+
+
 
 ]
 
