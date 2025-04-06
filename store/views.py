@@ -3,6 +3,7 @@ from .models import Product, Category, Size, ProductSize
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.urls import reverse
+from questions.models import Question
 
 
 def all_products_view(request):
@@ -124,39 +125,49 @@ def cart_view(request):
 def stock_management(request):
     """Only superusers can access the stock management page."""
     
-   
     if not request.user.is_authenticated:
         return redirect('login')  
 
-   
     if not request.user.is_superuser:
         return redirect('home')  
 
     products = Product.objects.prefetch_related("size_stock__size").all()
     sizes = Size.objects.all()
 
-    return render(request, 'stock.html', {'products': products, 'sizes': sizes})
+    # ✅ Count unanswered questions
+    unanswered_count = Question.objects.filter(answer__isnull=True).count()
+
+    return render(request, 'stock.html', {
+        'products': products,
+        'sizes': sizes,
+        'unanswered_count': unanswered_count,  # ✅ Pass to template
+    })
+
 
 
 def add_product(request):
     if not request.user.is_superuser:
         return redirect('store:stock_management')
 
-    categories = Category.objects.all() 
-    sizes = Size.objects.all()  
+    categories = Category.objects.all()
+    sizes = Size.objects.all()
 
     if request.method == "POST":
         name = request.POST.get("name")
         price = request.POST.get("price")
-        category_id = request.POST.get("category") 
+        category_id = request.POST.get("category")
         image = request.FILES.get("image")
         colour = request.POST.get("colour")
-        quantity = request.POST.get("quantity")
+        quantity = request.POST.get("quantity")  # Not directly used anymore, can be removed
 
-        if not (name and price and category_id and quantity):
-            return render(request, 'stock.html', {'categories': categories, 'sizes': sizes, 'error': "All fields are required!"})
+        if not (name and price and category_id):
+            return render(request, 'stock.html', {
+                'categories': categories,
+                'sizes': sizes,
+                'error': "All fields are required!"
+            })
 
-        category = get_object_or_404(Category, id=category_id)  
+        category = get_object_or_404(Category, id=category_id)
 
         new_product = Product(
             name=name,
@@ -167,20 +178,31 @@ def add_product(request):
         )
         new_product.save()
 
-      
+        # ✅ Save sizes
+        selected_size_ids = request.POST.getlist('sizes')
+        new_product.sizes.set(selected_size_ids)
+
+        # ✅ Save per-size quantities and update total stock
+        total_quantity = 0
         for size in sizes:
             quantity_size = request.POST.get(f"quantity_{size.id}")
             if quantity_size:
-                product_size = ProductSize(
+                quantity_int = int(quantity_size)
+                total_quantity += quantity_int
+                ProductSize.objects.create(
                     product=new_product,
                     size=size,
-                    quantity=int(quantity_size)
+                    quantity=quantity_int
                 )
-                product_size.save()
 
+        new_product.quantity_in_stock = total_quantity
+        new_product.save()
+
+        # ✅ Redirect after successful save
         return redirect('store:stock_management')
 
     return render(request, 'add.html', {'categories': categories, 'sizes': sizes})
+
 
 
 
@@ -277,45 +299,48 @@ def stock_search(request):
 
 
 def update_stock(request):
-   
     if not request.user.is_authenticated:
-        return redirect('login')  
+        return redirect('login')
     if not request.user.is_superuser:
-        return redirect('home') 
+        return redirect('home')
 
     if request.method == "POST":
-        product_id = request.POST.get('product_id') 
-        
+        product_id = request.POST.get('product_id')
+
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return HttpResponseNotFound("Product not found")
 
-      
+        total_quantity = 0  # ✅ Start with 0
+
         for size in product.sizes.all():
             size_field_name = f"size_{size.id}"
             new_stock = request.POST.get(size_field_name)
 
-          
             if new_stock:
                 try:
-                    new_stock = int(new_stock) 
+                    new_stock = int(new_stock)
                 except ValueError:
-                    continue  
+                    continue
 
-               
                 product_size, created = ProductSize.objects.get_or_create(
-                    product=product, size=size,
-                    defaults={'quantity': new_stock} 
+                    product=product,
+                    size=size,
+                    defaults={'quantity': new_stock}
                 )
 
                 if not created:
-                   
                     product_size.quantity = new_stock
                     product_size.save()
 
-      
+                total_quantity += new_stock  # ✅ Add to total
+
+        # ✅ Save updated total stock
+        product.quantity_in_stock = total_quantity
+        product.save()
+
         return redirect('store:stock_management')
 
-    return redirect('store:stock_management')  
+    return redirect('store:stock_management')
 

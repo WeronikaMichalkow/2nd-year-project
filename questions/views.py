@@ -9,12 +9,17 @@ def askQ(request):
         form = form_for_question(request.POST)
         if form.is_valid():
             question = form.save(commit=False)
-            question.user = request.user  
-            question.save()
+            question.user = request.user
+            question.save()  # This should assign an ID to the question.
+            print(f"Question created with ID: {question.id}")  # Print the ID for debugging.
             return redirect('questions:list')  
+        else:
+            print("Form is not valid")
+    else:
         form = form_for_question()
 
     return render(request, 'ask_q.html', {'form': form})
+
 
 
 def listQ(request):
@@ -35,8 +40,24 @@ def answerQ(request, question_id):
         if form.is_valid():
             question.answered = now()  
             form.save()
-            return redirect('questions:answer_q')
+            return redirect('questions:list')
+
     else:
         form = form_for_answer(instance=question)
 
     return render(request, 'answer_q.html', {'form': form, 'question': question})
+
+
+
+
+def unanswered_questions(request):
+
+    if not request.user.is_staff:
+        return redirect('questions:list') 
+
+    unanswered = Question.objects.filter(answer__isnull=True)
+    count = unanswered.count()
+    return render(request, 'unanswered_admin.html', {
+        'unanswered_questions': unanswered,
+        'count': count,
+    })

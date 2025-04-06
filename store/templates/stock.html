@@ -17,8 +17,10 @@
             <div class="text-end mb-3">
                 <a href="{% url 'store:add_product' %}" class="btn btn-dark">Add Product</a>
             </div>
-            <div class="text-end mb-3">
-                <a href="{% url 'questions:list' %}" class="btn btn-dark">Answer Questions</a>
+            <div class="mb-4 text-end">
+                <a href="{% url 'questions:unanswered_admin' %}" class="btn btn-dark">
+                    Unanswered Questions <span class="badge bg-dark">{{ unanswered_count }}</span>
+                </a>
             </div>
         </div>
     </nav>
