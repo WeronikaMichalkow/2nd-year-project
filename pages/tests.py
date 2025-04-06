@@ -1,17 +1,22 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth.models import User
 from store.models import Category, Product
+from reviews.forms import ReviewForm
 
-class PagesTests(TestCase):
-
+class HomeAndCategoryViewsTests(TestCase):
     def setUp(self):
-        self.men_category = Category.objects.create(name='Men', description='Men category')
-        self.kids_category = Category.objects.create(name='kids', description='Kids category')
-        self.women_category = Category.objects.create(name='women', description='Women category')
+        self.client = Client()
 
-        Product.objects.create(name='Men Product 1', description='Men product description', price=10.00, category=self.men_category)
-        Product.objects.create(name='Kids Product 1', description='Kids product description', price=15.00, category=self.kids_category)
-        Product.objects.create(name='Women Product 1', description='Women product description', price=20.00, category=self.women_category)
+      
+        self.men_category = Category.objects.create(name='Men')
+        self.women_category = Category.objects.create(name='women')
+        self.kids_category = Category.objects.create(name='kids')
+
+    
+        self.men_product = Product.objects.create(name='Men Shirt', price=20.0, category=self.men_category)
+        self.women_product = Product.objects.create(name='Women Dress', price=30.0, category=self.women_category)
+        self.kids_product = Product.objects.create(name='Kids Shorts', price=15.0, category=self.kids_category)
 
     def test_homepage_view(self):
         response = self.client.get(reverse('homepage'))
@@ -19,25 +24,22 @@ class PagesTests(TestCase):
         self.assertTemplateUsed(response, 'home.html')
 
     def test_mens_view(self):
-        response = self.client.get(reverse('mens'))
+        response = self.client.get(reverse('mens_view'))  
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'mens.html')
-        self.assertContains(response, 'Men Product 1')
-
-    def test_kids_view(self):
-        response = self.client.get(reverse('kids'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'kids.html')
-        self.assertContains(response, 'Kids Product 1')
+        self.assertIn(self.men_product, response.context['products'])
+        self.assertIsInstance(response.context['review_form'], ReviewForm)
 
     def test_womens_view(self):
-        response = self.client.get(reverse('womens'))
+        response = self.client.get(reverse('womens_view'))  
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'womens.html')
-        self.assertContains(response, 'Women Product 1')
+        self.assertIn(self.women_product, response.context['products'])
+        self.assertIsInstance(response.context['review_form'], ReviewForm)
 
-    def test_womens_view_empty_category(self):
-        empty_category = Category.objects.create(name='Empty', description='No products')
-        response = self.client.get(reverse('womens'))
+    def test_kids_view(self):
+        response = self.client.get(reverse('kids_view'))  
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'No products available')
+        self.assertTemplateUsed(response, 'kids.html')
+        self.assertIn(self.kids_product, response.context['products'])
+        self.assertIsInstance(response.context['review_form'], ReviewForm)

@@ -13,6 +13,7 @@ class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
     review_text = models.TextField()
     rating = models.PositiveIntegerField(null=True)
+    helpful_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Review by {self.user.username if self.user else 'Anonymous'} - Rating: {self.rating}"

@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from store.models import Product
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.http import JsonResponse
 
 class ReviewsView(View):
     def get(self, request):
@@ -59,3 +60,28 @@ def delete_review(request, review_id):
 
     review.delete()
     return redirect('reviews')
+
+def like_test(request):
+    review = Review.objects.first()  
+    return render(request, 'reviews/like_test.html', {'review': review})
+
+@csrf_exempt
+def test_like_review(request, review_id):
+    if request.method == 'POST':
+        review = Review.objects.get(id=review_id)
+        review.helpful_count += 1
+        review.save()
+        return JsonResponse({'helpful_count': review.helpful_count})
+    return JsonResponse({'error': 'Invalid method'}, status=400)
+
+@csrf_exempt
+def like_review(request, review_id):
+    if request.method == 'POST':
+        try:
+            review = Review.objects.get(id=review_id)
+            review.helpful_count += 1
+            review.save()
+            return JsonResponse({'helpful_count': review.helpful_count})
+        except Review.DoesNotExist:
+            return JsonResponse({'error': 'Not found'}, status=404)
+    return JsonResponse({'error': 'Invalid method'}, status=400)

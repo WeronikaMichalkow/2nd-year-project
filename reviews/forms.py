@@ -4,8 +4,9 @@ from store.models import Product
 
 class ReviewForm(forms.ModelForm):
     product = forms.ModelChoiceField(
-        queryset=Product.objects.all(),
-        required=False, 
+        queryset=Product.objects.none(), 
+        required=False,
+        empty_label="General Review",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -23,3 +24,10 @@ class ReviewForm(forms.ModelForm):
                 attrs={'class': 'form-control'}
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+   
+        self.fields['product'].queryset = Product.objects.none()
+        self.fields['product'].required = False
+        self.fields['product'].empty_label = "General Review"
