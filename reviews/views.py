@@ -8,12 +8,39 @@ from store.models import Product
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.http import JsonResponse
+from django.db.models import Avg
+
+
+from django.db.models import Avg
+from django.views import View
+from .models import Review
+from .forms import ReviewForm
 
 class ReviewsView(View):
     def get(self, request):
-        reviews = Review.objects.all()  
-        form = ReviewForm()  
-        return render(request, 'reviews/reviews.html', {'reviews': reviews, 'form': form})
+        reviews = Review.objects.all()
+        form = ReviewForm()
+
+    
+        average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+        if average_rating:
+            average_rating = round(average_rating, 1)
+            full_stars = int(average_rating)
+            has_half_star = (average_rating - full_stars) >= 0.5
+            empty_stars = 5 - full_stars - (1 if has_half_star else 0)
+        else:
+            full_stars = 0
+            has_half_star = False
+            empty_stars = 5
+
+        return render(request, 'reviews/reviews.html', {
+            'reviews': reviews,
+            'form': form,
+            'average_rating': average_rating,
+            'full_stars': range(full_stars),
+            'has_half_star': has_half_star,
+            'empty_stars': range(empty_stars),
+        })
 
     def post(self, request):
         if request.user.is_authenticated:
@@ -25,6 +52,7 @@ class ReviewsView(View):
                 review.save()
                 return redirect('reviews')
         return redirect('cos_accounts:signin')
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')

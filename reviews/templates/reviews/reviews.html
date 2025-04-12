@@ -19,6 +19,32 @@
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">Reviews</h2>
+    {% if average_rating %}
+<div class="text-center mb-4" style="color: gold; font-size: 1.5rem;">
+    
+    {# Full stars #}
+    {% for _ in full_stars %}
+        ★
+    {% endfor %}
+
+    {# Half star #}
+    {% if has_half_star %}
+        ½
+    {% endif %}
+
+    {# Empty stars #}
+    {% for _ in empty_stars %}
+        ☆
+    {% endfor %}
+
+    <div style="font-size: 1rem; color: black;">
+        Average Rating: {{ average_rating }} / 5
+    </div>
+</div>
+{% endif %}
+
+
+
 
     <div class="row justify-content-center">
         {% for review in reviews %}
