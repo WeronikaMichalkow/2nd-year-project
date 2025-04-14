@@ -17,5 +17,6 @@ urlpatterns = [
     path('admin/stock/search/', views.stock_search, name='stocksearch'),
     path('admin/stock/update/', views.update_stock, name='update_stock'),
     path('answer/<int:question_id>/', answerQ, name='answer_q'),
+    path('admin/analysis/', views.analytics_dashboard, name='admin_analytics'),
     
 ]
