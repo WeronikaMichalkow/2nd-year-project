@@ -135,9 +135,9 @@ def stock_management(request):
     sizes = Size.objects.all()
     unanswered_count = Question.objects.filter(answer__isnull=True).count()
 
-    # 🧠 Find most purchased product based on name
+    
     most_purchased = (
-        CartItem.objects.values('product')  # Note: product is a CharField here
+        CartItem.objects.values('product')  
         .annotate(total_quantity=Sum('quantity'))
         .order_by('-total_quantity')
         .first()
@@ -173,7 +173,7 @@ def add_product(request):
         category_id = request.POST.get("category")
         image = request.FILES.get("image")
         colour = request.POST.get("colour")
-        quantity = request.POST.get("quantity")  # Not directly used anymore, can be removed
+        quantity = request.POST.get("quantity")  
 
         if not (name and price and category_id):
             return render(request, 'stock.html', {
@@ -193,11 +193,11 @@ def add_product(request):
         )
         new_product.save()
 
-        # ✅ Save sizes
+        
         selected_size_ids = request.POST.getlist('sizes')
         new_product.sizes.set(selected_size_ids)
 
-        # ✅ Save per-size quantities and update total stock
+        
         total_quantity = 0
         for size in sizes:
             quantity_size = request.POST.get(f"quantity_{size.id}")
@@ -213,7 +213,6 @@ def add_product(request):
         new_product.quantity_in_stock = total_quantity
         new_product.save()
 
-        # ✅ Redirect after successful save
         return redirect('store:stock_management')
 
     return render(request, 'add.html', {'categories': categories, 'sizes': sizes})
@@ -327,7 +326,7 @@ def update_stock(request):
         except Product.DoesNotExist:
             return HttpResponseNotFound("Product not found")
 
-        total_quantity = 0  # ✅ Start with 0
+        total_quantity = 0  
 
         for size in product.sizes.all():
             size_field_name = f"size_{size.id}"
@@ -349,9 +348,9 @@ def update_stock(request):
                     product_size.quantity = new_stock
                     product_size.save()
 
-                total_quantity += new_stock  # ✅ Add to total
+                total_quantity += new_stock  
 
-        # ✅ Save updated total stock
+        
         product.quantity_in_stock = total_quantity
         product.save()
 
@@ -364,7 +363,7 @@ def analytics_dashboard(request):
     if not request.user.is_superuser:
         return redirect('home')
 
-    # Aggregate total quantities per product
+    
     top_item = (
         CartItem.objects.values('product')
         .annotate(total_quantity=Sum('quantity'))
@@ -381,24 +380,24 @@ def analytics_dashboard(request):
                 'total_quantity': top_item['total_quantity']
             }
         except Product.DoesNotExist:
-            pass  # product was deleted or mismatch
+            pass  
 
-    # Most recently purchased item
+    
     recent_cart_item = (
         CartItem.objects
         .select_related('product')
-        .order_by('-id')  # assuming higher id = newer purchase
+        .order_by('-id') 
         .first()
     )
 
-    # Low stock products (quantity_in_stock < 10)
+    
     low_stock_threshold = 10
     low_stock_products = Product.objects.filter(quantity_in_stock__lt=low_stock_threshold)
 
     context = {
         'most_purchased': most_purchased,
         'recent_cart_item': recent_cart_item,
-        'low_stock_products': low_stock_products,  # passing low stock products to the template
+        'low_stock_products': low_stock_products, 
     }
 
     return render(request, 'analysis.html', context)

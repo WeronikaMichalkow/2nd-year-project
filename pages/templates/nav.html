@@ -34,12 +34,11 @@
             {% endif %}
 
             {% if request.user.is_superuser %}
-                <!-- Only show Admin Panel to superusers -->
+                
                 <a href="{% url 'store:stock_management' %}" class="btn btn-outline-dark">
                     Admin Panel
                 </a>
             {% elif user.is_authenticated %}
-                <!-- All regular buttons for non-admin users only -->
                 <a href="{% url 'cart:cart_detail' %}" class="btn btn-outline-dark">
                     <i class="fas fa-shopping-cart"></i> Cart
                     {% if item_count > 0 %}

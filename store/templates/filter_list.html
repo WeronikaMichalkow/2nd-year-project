@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Shop - Browse Products</title>
+    <title>Filter Products</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     {% include 'header.html' %}
@@ -15,7 +15,7 @@
                 Filter Our Products
             </h2>
 
-            <!-- Filter Section -->
+            
             <div class="card shadow-lg p-4 mb-5">
                 <form method="GET" class="row g-3">
                     <div class="col-md-3">
@@ -68,7 +68,7 @@
                 </form>
             </div>
 
-            <!-- Product Display -->
+            
             <div class="row">
                 {% for product in products %}
                     <div class="col-md-4 mb-4">
@@ -102,7 +102,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Back to Home -->
+            
             <div class="text-center mt-4">
                 <a href="{% url 'homepage' %}" class="btn btn-dark">Back to Home</a>
             </div>

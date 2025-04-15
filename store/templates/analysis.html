@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Analytics Dashboard</title>
+    <title>Analytics - Admin</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
@@ -74,7 +74,7 @@
 
 
 
-                        <!-- Low Stock Alert -->
+                        
                         {% if low_stock_products %}
                             <h3 class="lowstock-title"> Low Stock Products </h3>
 
@@ -106,7 +106,7 @@
 
 
 
-            <!-- Back Button -->
+            
             <div class="text-center mt-4">
                 <a href="{% url 'store:stock_management' %}" class="btn btn-dark">Back to Panel</a>
             </div>

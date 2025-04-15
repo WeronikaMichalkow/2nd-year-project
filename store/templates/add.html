@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Add Product - Admin Panel</title>
+    <title>Add Product - Admin</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
@@ -56,7 +56,7 @@
                         </select>
                     </div>
 
-                    <!-- Quantity input fields for selected sizes -->
+                    
                     <div id="quantity-fields" class="mb-3">
                         <label class="form-label fw-bold">Quantity for Sizes</label>
                         {% for size in sizes %}
@@ -81,15 +81,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // JavaScript to toggle visibility of quantity inputs based on selected sizes
+        
         const sizeSelect = document.querySelector('select[name="sizes"]');
         const quantityFields = document.querySelectorAll('.size-quantity');
 
         sizeSelect.addEventListener('change', function() {
-            // Hide all quantity fields first
+            
             quantityFields.forEach(field => field.style.display = 'none');
             
-            // Show the quantity fields for selected sizes
+            
             const selectedSizeIds = Array.from(sizeSelect.selectedOptions).map(option => option.value);
             selectedSizeIds.forEach(sizeId => {
                 const sizeField = document.getElementById(`size-${sizeId}`);
@@ -99,7 +99,7 @@
             });
         });
         
-        // Trigger the event on page load to show already selected sizes' quantity fields if any
+        
         sizeSelect.dispatchEvent(new Event('change'));
     </script>
 </body>

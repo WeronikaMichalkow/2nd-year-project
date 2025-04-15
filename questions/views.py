@@ -10,8 +10,8 @@ def askQ(request):
         if form.is_valid():
             question = form.save(commit=False)
             question.user = request.user
-            question.save()  # This should assign an ID to the question.
-            print(f"Question created with ID: {question.id}")  # Print the ID for debugging.
+            question.save()  
+            print(f"Question created with ID: {question.id}")  
             return redirect('questions:list')  
         else:
             print("Form is not valid")

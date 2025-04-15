@@ -11,7 +11,7 @@
 <body>
 
     <div class="container mt-5">
-        <h2>Unanswered Questions <span class="badge bg-danger">{{ count }}</span></h2>
+        <h2>Unanswered Questions <span class="badge bg-dark">{{ count }}</span></h2>
 
         {% if unanswered_questions %}
             <ul class="list-group mt-4">
@@ -21,12 +21,12 @@
                             <p><strong>Question:</strong> {{ question.text }}</p>
                             <p><strong>Asked by:</strong> {{ question.user.username }} on {{ question.created|date:"F j, Y, g:i a" }}</p>
                         </div>
-                        <a href="{% url 'questions:answer_q' question.id %}" class="btn btn-sm btn-primary">Answer</a>
+                        <a href="{% url 'questions:answer_q' question.id %}" class="btn btn-sm btn-success">Answer</a>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="mt-4">🎉 All questions have been answered!</p>
+            <p class="mt-4"> All questions have been answered</p>
         {% endif %}
     </div>
 
