@@ -153,66 +153,10 @@ def stock_management(request):
 
 
 
-def analytics_dashboard(request):
-    if not request.user.is_superuser:
-        return redirect('home')
 
-    # Aggregate total quantities per product
-    top_item = (
-        CartItem.objects.values('product')
-        .annotate(total_quantity=Sum('quantity'))
-        .order_by('-total_quantity')
-        .first()
-    )
 
-    most_purchased = None
-    if top_item:
-        try:
-            product = Product.objects.get(id=top_item['product'])
-            most_purchased = {
-                'product': product,
-                'total_quantity': top_item['total_quantity']
-            }
-        except Product.DoesNotExist:
-            pass  # product was deleted or mismatch
-
-    # Most recently purchased item
-    recent_cart_item = (
-        CartItem.objects
-        .select_related('product')
-        .order_by('-id')  # assuming higher id = newer purchase
-        .first()
-    )
-
-    context = {
-        'most_purchased': most_purchased,
-        'recent_cart_item': recent_cart_item,
-    }
-
-    return render(request, 'analysis.html', context)
-
-    popular_size = (
-    CartItem.objects.values('size')  # Group by the 'size' field
-    .annotate(total_quantity=Sum('quantity'))  # Sum the quantities for each size
-    .order_by('-total_quantity')  # Order by total quantity in descending order
-    .first()  # Get the first (most popular) result
-)
-
-# If there's a result, you can extract the popular size
-    if popular_size:
-        most_popular_size = popular_size['size']
-        most_popular_quantity = popular_size['total_quantity']
-    else:
-        most_popular_size = None
-        most_popular_quantity = 0
-
-    context = {
-        'most_purchased': most_purchased,
-        'most_popular_size': most_popular_size,
-        'most_popular_quantity': most_popular_quantity,
-    }
-
-    return render(request, 'analysis.html', context)
+      
+    
 
 
 
@@ -415,3 +359,46 @@ def update_stock(request):
 
     return redirect('store:stock_management')
 
+
+def analytics_dashboard(request):
+    if not request.user.is_superuser:
+        return redirect('home')
+
+    # Aggregate total quantities per product
+    top_item = (
+        CartItem.objects.values('product')
+        .annotate(total_quantity=Sum('quantity'))
+        .order_by('-total_quantity')
+        .first()
+    )
+
+    most_purchased = None
+    if top_item:
+        try:
+            product = Product.objects.get(id=top_item['product'])
+            most_purchased = {
+                'product': product,
+                'total_quantity': top_item['total_quantity']
+            }
+        except Product.DoesNotExist:
+            pass  # product was deleted or mismatch
+
+    # Most recently purchased item
+    recent_cart_item = (
+        CartItem.objects
+        .select_related('product')
+        .order_by('-id')  # assuming higher id = newer purchase
+        .first()
+    )
+
+    # Low stock products (quantity_in_stock < 10)
+    low_stock_threshold = 10
+    low_stock_products = Product.objects.filter(quantity_in_stock__lt=low_stock_threshold)
+
+    context = {
+        'most_purchased': most_purchased,
+        'recent_cart_item': recent_cart_item,
+        'low_stock_products': low_stock_products,  # passing low stock products to the template
+    }
+
+    return render(request, 'analysis.html', context)

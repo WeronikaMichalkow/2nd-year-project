@@ -49,9 +49,10 @@
                             <tr>
                                 <th>Product</th>
                                 <th>Image</th>
-                                <th>Quantity</th>
+                                <th>Size Quantity</th>
+                                <th>Total Stock</th>
                                 <th>Update Stock</th>
-                                <th>Actions</th>
+                                <th>Delete Product</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -79,12 +80,18 @@
                                             {% endfor %}
                                         </ul>
                                     </td>
+                        
+                                    <!-- ✅ Display total quantity -->
+                                    <td class="text-center">
+                                        <strong>Total: {{ product.quantity_in_stock }}</strong>
+                                    </td>
+                        
                                     <td>
                                         <!-- Form to update stock for multiple sizes -->
                                         <form method="POST" action="{% url 'store:update_stock' %}">
                                             {% csrf_token %}
                                             <input type="hidden" name="product_id" value="{{ product.id }}">
-
+                        
                                             {% for size in product.sizes.all %}
                                                 <div class="mb-2">
                                                     <label for="size_{{ size.id }}" class="form-label">
@@ -95,17 +102,17 @@
                                                             {% endif %}
                                                         {% endfor %}
                                                     </label>
-
+                        
                                                     <!-- Stock quantity input for each size -->
                                                     <input type="number" name="size_{{ size.id }}" id="size_{{ size.id }}" class="form-control" min="0" 
                                                            value="{% for ps in product.size_stock.all %}{% if ps.size.id == size.id %}{{ ps.quantity }}{% endif %}{% endfor %}">
                                                 </div>
                                             {% endfor %}
-
+                        
                                             <button type="submit" class="btn btn-dark btn-sm">Update</button>
                                         </form>
                                     </td>
-
+                        
                                     <td>
                                         <form method="POST" action="{% url 'store:delete_product' product.id %}">
                                             {% csrf_token %}
@@ -115,6 +122,7 @@
                                 </tr>
                             {% endfor %}
                         </tbody>
+                        
                     </table>
                 </div>
             </div>
