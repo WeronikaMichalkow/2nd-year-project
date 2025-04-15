@@ -9,7 +9,10 @@ from django.urls import reverse
 from decimal import Decimal
 from order.models import Order, OrderItem
 from stripe import StripeError
+import logging
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
+logger = logging.getLogger(__name__)
 
 
 
@@ -177,6 +180,8 @@ def payment_success(request):
             points_earned = int(total_amount_spent * 0.1)
             loyalty_account.points += points_earned
             loyalty_account.save()
+
+    empty_cart(request)
 
     return redirect('homepage')
 
