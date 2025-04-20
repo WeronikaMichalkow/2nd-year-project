@@ -63,7 +63,6 @@ def add_cart(request, product_id):
     return redirect('cart:cart_detail')  
   
  
-
 def cart_detail(request):
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
@@ -72,6 +71,7 @@ def cart_detail(request):
     except Cart.DoesNotExist:
         cart_items = []
         total = 0
+        cart = None  # Important to avoid referencing undefined variable later
 
     discount = 0
     final_total = total
@@ -89,15 +89,20 @@ def cart_detail(request):
 
         final_total = total - discount if total >= discount else 0
 
-   
+        # Update loyalty points
         loyalty_account.points = max(0, loyalty_account.points - discount)
         loyalty_account.save()
 
-      
+        # 🟢 Store data needed for post-checkout processing
         request.session['used_loyalty_points'] = int(discount)
         request.session['cashback_points'] = cashback_points
         request.session['total_amount'] = float(final_total)
 
+        # ✅ Store cart ID so we can find the right cart in create_order after redirect
+        if cart:
+            request.session['active_cart_id'] = cart.cart_id
+
+        # Create Stripe checkout session
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
@@ -113,7 +118,9 @@ def cart_detail(request):
                 },
             ],
             mode='payment',
-            success_url=request.build_absolute_uri('/cart/success/'),
+            success_url=request.build_absolute_uri(
+                reverse('cart:new_order')
+            ) + '?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=request.build_absolute_uri('/cart/cancel/'),
         )
 
@@ -127,6 +134,7 @@ def cart_detail(request):
         'loyalty_points': loyalty_account.points if loyalty_account else 0,
         'cashback_points': cashback_points
     })
+
 
 
 def cart_view(request, product_id):
@@ -204,6 +212,20 @@ def empty_cart(request):
         pass
     
     return redirect('cart:cart_detail')
+    
+
+def empty_cart_logic(request):
+    try:
+        cart = Cart.objects.get(cart_id=_cart_id(request))
+        cart_items = cart.cartitem_set.all()
+        if cart_items.exists():
+            logger.info(f"Deleting {cart_items.count()} cart items for cart ID: {cart.cart_id}")
+            cart_items.delete()
+        cart.delete()
+        logger.info(f"Cart with ID: {cart.cart_id} deleted.")
+    except Cart.DoesNotExist:
+        logger.info("Cart does not exist, skipping deletion.")
+
 
 
 def create_order(request):
@@ -212,15 +234,19 @@ def create_order(request):
         if not session_id:
             raise ValueError("Session ID not found.")
 
+        logger.info(f"Stripe Session ID: {session_id}")
+
         try:
             session = stripe.checkout.Session.retrieve(session_id)
-        except StripeError:
+        except StripeError as e:
+            logger.error(f"Stripe Error: {e}")
             return redirect("store:all_products")
 
         customer_details = session.customer_details
         if not customer_details or not customer_details.address:
-            raise ValueError("Missing information in the Stripe session.")
+            raise ValueError("Missing Stripe customer address info.")
 
+        # Create Order
         order_details = Order.objects.create(
             token=session.id,
             total=session.amount_total / 100,
@@ -236,36 +262,71 @@ def create_order(request):
             shippingPostcode=customer_details.address.postal_code,
             shippingCountry=customer_details.address.country,
         )
+        order_details.save()
+
+        
+        # ✅ Get cart using consistent _cart_id logic
+        cart_id = _cart_id(request)
 
         try:
-            cart = Cart.objects.get(cart_id=_cart_id(request))
+            cart = Cart.objects.get(cart_id=cart_id)
             cart_items = CartItem.objects.filter(cart=cart, active=True)
+        except ObjectDoesNotExist:
+            logger.error("Cart not found or empty.")
+            return redirect("store:all_products")
 
-            for item in cart_items:
+
+        for item in cart_items:
+            try:
                 OrderItem.objects.create(
                     product=item.product.name,
                     quantity=item.quantity,
                     price=item.product.price,
                     order=order_details
                 )
-
-                
-                product = Product.objects.get(id=item.product.id)
+                # Update stock
+                product = item.product
                 product.stock = max(0, product.stock - item.quantity)
                 product.save()
+            except Exception as e:
+                logger.error(f"Error creating OrderItem: {e}")
+                return redirect("store:all_products")
 
-        except ObjectDoesNotExist:
-            pass
+        # ✅ Empty the cart
+        cart.cartitem_set.all().delete()
+        cart.delete()
+        logger.info("Cart emptied successfully.")
 
-        
-        empty_cart(request)
+        # 🧼 Clean up session key
+        request.session.pop('active_cart_id', None)
 
-        return redirect('store:all_products')
+        # ✅ Redirect to thank you page
+        return redirect('cart:thank_you')
 
     except Exception as e:
-        print(f"Unexpected error: {e}")
-        return redirect("store:all_products")
+        logger.error(f"Unexpected error in create_order: {e}")
+        empty_cart(request)
+        return redirect("cart:thank_you")
 
 
+
+
+
+def thank_you(request):
+    # Ensure the user is authenticated and we fetch their latest order
+    if request.user.is_authenticated:
+        latest_order = Order.objects.filter(emailAddress=request.user.email).order_by('-created').first()
+        order_items = OrderItem.objects.filter(order=latest_order) if latest_order else []
+    else:
+        # If not authenticated, redirect or show a message
+        latest_order = None
+        order_items = []
+
+    return render(request, 'cart/thank_you.html', {
+        'order': latest_order,
+        'order_items': order_items,
+    })
+
+    
 
 

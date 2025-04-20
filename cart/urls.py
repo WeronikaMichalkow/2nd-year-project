@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import add_cart, cart_view, cart_remove, cart_detail, full_remove, payment_success, empty_cart, create_order
+from .views import add_cart, cart_view, cart_remove, cart_detail, full_remove, payment_success, empty_cart, create_order, thank_you
 from pages.views import homepage
 from . import views
 
@@ -14,4 +14,5 @@ urlpatterns = [
     path('success/', views.payment_success, name='payment_success'),
     path('new_order/', views.create_order, name='new_order'),
     path('home/', homepage, name='home'),
+    path('thank_you/', views.thank_you, name='thank_you'),
 ]

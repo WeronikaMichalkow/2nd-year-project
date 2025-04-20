@@ -35,5 +35,5 @@ class OrderAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-admin.site.register(OrderItem)  
+
 admin.site.register(Order, OrderAdmin)  
