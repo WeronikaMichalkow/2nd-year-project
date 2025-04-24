@@ -89,20 +89,20 @@ def cart_detail(request):
 
         final_total = total - discount if total >= discount else 0
 
-        # Update loyalty points
+        
         loyalty_account.points = max(0, loyalty_account.points - discount)
         loyalty_account.save()
 
-        # 🟢 Store data needed for post-checkout processing
+        
         request.session['used_loyalty_points'] = int(discount)
         request.session['cashback_points'] = cashback_points
         request.session['total_amount'] = float(final_total)
 
-        # ✅ Store cart ID so we can find the right cart in create_order after redirect
+        
         if cart:
             request.session['active_cart_id'] = cart.cart_id
 
-        # Create Stripe checkout session
+        
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
@@ -214,17 +214,6 @@ def empty_cart(request):
     return redirect('cart:cart_detail')
     
 
-def empty_cart_logic(request):
-    try:
-        cart = Cart.objects.get(cart_id=_cart_id(request))
-        cart_items = cart.cartitem_set.all()
-        if cart_items.exists():
-            logger.info(f"Deleting {cart_items.count()} cart items for cart ID: {cart.cart_id}")
-            cart_items.delete()
-        cart.delete()
-        logger.info(f"Cart with ID: {cart.cart_id} deleted.")
-    except Cart.DoesNotExist:
-        logger.info("Cart does not exist, skipping deletion.")
 
 
 
@@ -246,7 +235,7 @@ def create_order(request):
         if not customer_details or not customer_details.address:
             raise ValueError("Missing Stripe customer address info.")
 
-        # Create Order
+        
         order_details = Order.objects.create(
             token=session.id,
             total=session.amount_total / 100,
@@ -265,7 +254,7 @@ def create_order(request):
         order_details.save()
 
         
-        # ✅ Get cart using consistent _cart_id logic
+        
         cart_id = _cart_id(request)
 
         try:
@@ -284,7 +273,7 @@ def create_order(request):
                     price=item.product.price,
                     order=order_details
                 )
-                # Update stock
+                
                 product = item.product
                 product.stock = max(0, product.stock - item.quantity)
                 product.save()
@@ -292,15 +281,15 @@ def create_order(request):
                 logger.error(f"Error creating OrderItem: {e}")
                 return redirect("store:all_products")
 
-        # ✅ Empty the cart
+        
         cart.cartitem_set.all().delete()
         cart.delete()
         logger.info("Cart emptied successfully.")
 
-        # 🧼 Clean up session key
+        
         request.session.pop('active_cart_id', None)
 
-        # ✅ Redirect to thank you page
+        
         return redirect('cart:thank_you')
 
     except Exception as e:
@@ -313,12 +302,12 @@ def create_order(request):
 
 
 def thank_you(request):
-    # Ensure the user is authenticated and we fetch their latest order
+    
     if request.user.is_authenticated:
         latest_order = Order.objects.filter(emailAddress=request.user.email).order_by('-created').first()
         order_items = OrderItem.objects.filter(order=latest_order) if latest_order else []
     else:
-        # If not authenticated, redirect or show a message
+        
         latest_order = None
         order_items = []
 

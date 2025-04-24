@@ -149,3 +149,6 @@ STRIPE_SECRET_KEY = 'sk_test_51QL0SuP176sP7FMhgI6sOlnP0nbCKMPKzbfoKqPSjbxPSF5lGH
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51QL0SuP176sP7FMhWxe8ZOjTziV5L85rHixKNPQJU5wyvb3lJr5i8nzY6PntEw5NSmPHdfvn6WxaiNfi0FzOISwf00P81gX65m'
 STRIPE_TEST_SECRET_KEY = 'your_secret_key_here'
 STRIPE_TEST_PUBLIC_KEY = 'your_public_key_here'
+
+LOGIN_URL = '/accounts/signin/'
+
