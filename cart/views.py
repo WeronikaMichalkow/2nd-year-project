@@ -10,9 +10,14 @@ from decimal import Decimal
 from order.models import Order, OrderItem
 from stripe import StripeError
 import logging
+from vouchers.models import Voucher
+from vouchers.forms import VoucherApplyForm
+from decimal import Decimal
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 logger = logging.getLogger(__name__)
+
 
 
 
@@ -64,16 +69,31 @@ def add_cart(request, product_id):
   
  
 def cart_detail(request):
+    discount = 0
+    voucher_id = 0
+    new_total = 0
+    voucher = None
+
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart)
         total = sum(item.product.price * item.quantity for item in cart_items)
+
+        if 'voucher_code' in request.GET:
+            voucher_code = request.GET['voucher_code']
+            try:
+                voucher = Voucher.objects.get(code=voucher_code, active=True)
+                voucher_id = voucher.id
+                discount = voucher.discount_amount
+            except Voucher.DoesNotExist:
+                voucher = None
+                discount = 0
+
     except Cart.DoesNotExist:
         cart_items = []
         total = 0
-        cart = None  # Important to avoid referencing undefined variable later
+        cart = None
 
-    discount = 0
     final_total = total
     cashback_points = 0
 
@@ -89,20 +109,16 @@ def cart_detail(request):
 
         final_total = total - discount if total >= discount else 0
 
-        
         loyalty_account.points = max(0, loyalty_account.points - discount)
         loyalty_account.save()
 
-        
         request.session['used_loyalty_points'] = int(discount)
         request.session['cashback_points'] = cashback_points
         request.session['total_amount'] = float(final_total)
 
-        
         if cart:
             request.session['active_cart_id'] = cart.cart_id
 
-        
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
@@ -120,20 +136,26 @@ def cart_detail(request):
             mode='payment',
             success_url=request.build_absolute_uri(
                 reverse('cart:new_order')
-            ) + '?session_id={CHECKOUT_SESSION_ID}',
+            ) + '?session_id={CHECKOUT_SESSION_ID}&voucher_id={voucher_id}&cart_total={total}',
             cancel_url=request.build_absolute_uri('/cart/cancel/'),
         )
 
         return redirect(checkout_session.url)
 
+    voucher_apply_form = VoucherApplyForm() 
+
     return render(request, 'cart.html', {
         'cart_items': cart_items,
         'total': total,
-        'discount': discount,
         'final_total': final_total,
         'loyalty_points': loyalty_account.points if loyalty_account else 0,
-        'cashback_points': cashback_points
+        'cashback_points': cashback_points,
+        'voucher_apply_form': voucher_apply_form,
+        'new_total': new_total,
+        'voucher': voucher,
+        'discount': discount
     })
+
 
 
 
@@ -220,6 +242,8 @@ def empty_cart(request):
 def create_order(request):
     try:
         session_id = request.GET.get('session_id')
+        cart_total = request.GET.get('cart_total')
+        voucher_id = request.GET.get('voucher_id')
         if not session_id:
             raise ValueError("Session ID not found.")
 
@@ -264,6 +288,13 @@ def create_order(request):
             logger.error("Cart not found or empty.")
             return redirect("store:all_products")
 
+        voucher = get_object_or_404(Voucher, id=voucher_id)
+        if voucher != None:
+            order_details.voucher = voucher
+            cart_total = Decimal(cart_total)
+            order_details.discount = cart_total*(voucher.discount/Decimal('100'))
+            order_details.total = (cart_total-order_details.discount)
+            order_details.save()
 
         for item in cart_items:
             try:
@@ -277,6 +308,12 @@ def create_order(request):
                 product = item.product
                 product.stock = max(0, product.stock - item.quantity)
                 product.save()
+                if voucher != None:
+                    discount = (oi.price*(voucher.discount/Decimal('100')))
+                    oi.price = (oi.price - discount)
+                else:
+                    oi.price = oi.price*oi.quantity
+                oi.save()
             except Exception as e:
                 logger.error(f"Error creating OrderItem: {e}")
                 return redirect("store:all_products")

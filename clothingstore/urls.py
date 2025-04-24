@@ -35,6 +35,7 @@ urlpatterns = [
     path('questions/', include('questions.urls', namespace='questions')),  
     path('order/', include('order.urls')),
     path('stylequiz/', include('stylequiz.urls', namespace='stylequiz')),
+    path('vouchers/', include('vouchers.urls')),
     
 
 
