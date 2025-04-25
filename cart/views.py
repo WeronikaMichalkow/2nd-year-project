@@ -79,15 +79,18 @@ def cart_detail(request):
         cart_items = CartItem.objects.filter(cart=cart)
         total = sum(item.product.price * item.quantity for item in cart_items)
 
-        if 'voucher_code' in request.GET:
-            voucher_code = request.GET['voucher_code']
+        if 'voucher_id' in request.session:
             try:
-                voucher = Voucher.objects.get(code=voucher_code, active=True)
-                voucher_id = voucher.id
-                discount = voucher.discount_amount
+                voucher = Voucher.objects.get(id=request.session['voucher_id'], active=True)
+                discount = (Decimal(voucher.discount) / Decimal('100')) * Decimal(total)
+                new_total = total - discount
             except Voucher.DoesNotExist:
-                voucher = None
+                request.session['voucher_id'] = None
                 discount = 0
+                new_total = total
+        else:
+            new_total = total
+
 
     except Cart.DoesNotExist:
         cart_items = []

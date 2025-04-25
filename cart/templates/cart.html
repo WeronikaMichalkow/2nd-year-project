@@ -157,7 +157,7 @@
                                 {% if discount > 0 %}
                                     <p><strong>Loyalty Discount: -€{{ discount }}</strong></p>
                                 {% endif %}
-                                <p><strong>Final Total: €{{ final_total }}</strong></p>
+                                <p><strong>Final Total: €{{ new_total|default:final_total|floatformat:"2" }}</strong></p>
                             </div>
                         </div>
                     </div>
