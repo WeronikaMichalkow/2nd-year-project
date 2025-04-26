@@ -13,6 +13,8 @@ import logging
 from vouchers.models import Voucher
 from vouchers.forms import VoucherApplyForm
 from decimal import Decimal
+from store.models import Product
+from django.contrib import messages
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -162,12 +164,38 @@ def cart_detail(request):
 
 
 
-def cart_view(request, product_id):
+
+
+def cart_view(request):
+    if not request.user.is_authenticated:
+        messages.error(request, 'You need to be logged in to access your cart.')
+        return redirect('login')  # Redirect to the login page if the user is not authenticated
     
+    cart_items = request.session.get('cart', [])
+    selected_items = request.POST.getlist('selected_items')  # Get selected item IDs from the form
+
+    if not cart_items:
+        messages.error(request, 'Your cart is empty.')
+        return redirect('homepage')  # Redirect to homepage if the cart is empty
+
+    if selected_items:
+        # Filter the cart items to only include selected items (those whose IDs match the selected item IDs)
+        selected_cart_items = [item for item in cart_items if str(item['product_id']) in selected_items]
+    else:
+        # If no items are selected, show all items
+        selected_cart_items = cart_items
+
+    # Calculate the total for the selected items
+    total = sum(item['product'].price * item['quantity'] for item in selected_cart_items)
+
     context = {
-        'product_id': product_id,
+        'cart_items': selected_cart_items,
+        'total': total,
     }
-    return render(request, 'cart/cart.html', context) 
+
+    return render(request, 'cart/cart.html', context)
+
+
 
 def cart_remove(request, product_id):
     cart = Cart.objects.get(cart_id=_cart_id(request))
@@ -187,12 +215,15 @@ def cart_remove(request, product_id):
     return redirect('cart:cart_detail')
 
 
+
 def full_remove(request, product_id):
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
     cart_item = CartItem.objects.get(product=product, cart=cart)
     cart_item.delete()
     return redirect('cart:cart_detail')
+
+
 
 def payment_success(request):
     if request.user.is_authenticated:
@@ -262,7 +293,6 @@ def create_order(request):
         if not customer_details or not customer_details.address:
             raise ValueError("Missing Stripe customer address info.")
 
-        
         order_details = Order.objects.create(
             token=session.id,
             total=session.amount_total / 100,
@@ -280,62 +310,82 @@ def create_order(request):
         )
         order_details.save()
 
-        
-        
         cart_id = _cart_id(request)
 
         try:
             cart = Cart.objects.get(cart_id=cart_id)
-            cart_items = CartItem.objects.filter(cart=cart, active=True)
+            all_cart_items = CartItem.objects.filter(cart=cart, active=True)
         except ObjectDoesNotExist:
             logger.error("Cart not found or empty.")
             return redirect("store:all_products")
 
-        voucher = get_object_or_404(Voucher, id=voucher_id)
-        if voucher != None:
-            order_details.voucher = voucher
-            cart_total = Decimal(cart_total)
-            order_details.discount = cart_total*(voucher.discount/Decimal('100'))
-            order_details.total = (cart_total-order_details.discount)
-            order_details.save()
+        # Filter for selected items if provided
+        selected_items_raw = request.POST.getlist('selected_items')
+        if selected_items_raw:
+            selected_items = []
+            for item in selected_items_raw:
+                try:
+                    product_id, size = item.split(":")
+                    product_id = int(product_id)
+                    size = size.strip()
+                    cart_item = all_cart_items.filter(product__id=product_id, size=size).first()
+                    if cart_item:
+                        selected_items.append(cart_item)
+                except Exception as e:
+                    logger.warning(f"Skipping malformed selected item '{item}': {e}")
+            cart_items = selected_items
+        else:
+            cart_items = all_cart_items
+
+        if voucher_id:
+            voucher = get_object_or_404(Voucher, id=voucher_id)
+            if voucher:
+                order_details.voucher = voucher
+                cart_total = Decimal(cart_total)
+                order_details.discount = cart_total * (voucher.discount / Decimal('100'))
+                order_details.total = (cart_total - order_details.discount)
+                order_details.save()
 
         for item in cart_items:
             try:
-                OrderItem.objects.create(
+                oi = OrderItem.objects.create(
                     product=item.product.name,
                     quantity=item.quantity,
                     price=item.product.price,
                     order=order_details
                 )
-                
+
                 product = item.product
                 product.stock = max(0, product.stock - item.quantity)
                 product.save()
-                if voucher != None:
-                    discount = (oi.price*(voucher.discount/Decimal('100')))
+
+                if voucher_id:
+                    discount = (oi.price * (voucher.discount / Decimal('100')))
                     oi.price = (oi.price - discount)
                 else:
-                    oi.price = oi.price*oi.quantity
+                    oi.price = oi.price * oi.quantity
                 oi.save()
             except Exception as e:
                 logger.error(f"Error creating OrderItem: {e}")
                 return redirect("store:all_products")
 
-        
-        cart.cartitem_set.all().delete()
-        cart.delete()
-        logger.info("Cart emptied successfully.")
+        # Delete only purchased cart items
+        for item in cart_items:
+            item.delete()
 
-        
-        request.session.pop('active_cart_id', None)
+        # If all items are removed, delete the cart
+        if not cart.cartitem_set.exists():
+            cart.delete()
+            request.session.pop('active_cart_id', None)
+            logger.info("Cart emptied successfully.")
 
-        
         return redirect('cart:thank_you')
 
     except Exception as e:
         logger.error(f"Unexpected error in create_order: {e}")
         empty_cart(request)
         return redirect("cart:thank_you")
+
 
 
 
@@ -356,6 +406,65 @@ def thank_you(request):
         'order_items': order_items,
     })
 
-    
+
+# views.py
+
+def checkout_selected(request):
+    if request.method == "POST":
+        selected_items_raw = request.POST.getlist('selected_items')
+        selected_items = []
+
+        cart_id = _cart_id(request)
+        cart = Cart.objects.get(cart_id=cart_id)
+        all_cart_items = CartItem.objects.filter(cart=cart, active=True)
+
+        for item in selected_items_raw:
+            try:
+                product_id, size = item.split(":")
+                product_id = int(product_id)
+                size = size.strip()
+
+                cart_item = next(
+                    (i for i in all_cart_items if i.product.id == product_id and str(i.size) == size),
+                    None
+                )
+                if cart_item:
+                    selected_items.append(cart_item)
+            except Exception:
+                continue
+
+        # Calculate totals
+        total = sum(item.sub_total() for item in selected_items)
+
+        # Apply voucher if exists
+        voucher_id = request.session.get('voucher_id')
+        voucher = None
+        discount = 0
+        new_total = total
+        if voucher_id:
+            try:
+                voucher = Voucher.objects.get(id=voucher_id)
+                discount = (Decimal(voucher.discount) / Decimal(100)) * total
+                new_total = total - discount
+            except Voucher.DoesNotExist:
+                pass
+
+        return render(request, 'cart/checkout_selected.html', {
+            'selected_items': selected_items,
+            'total': total,
+            'voucher': voucher,
+            'discount': discount,
+            'new_total': new_total,
+            'voucher_apply_form': VoucherApplyForm(),  # important
+        })
+
+    return redirect('cart:cart_detail')
+
+
+
+
+
+
+
 
 

@@ -12,9 +12,9 @@
             {% include 'header.html' %}
         </div>
     </header>
-
+    
     {% include 'nav.html' %}
-
+   
     <div class="container mt-4">
         {% if not user.is_authenticated %}
             <div class="alert alert-warning text-center">
@@ -36,136 +36,115 @@
                         {{ message }}
                     </div>
                 {% endif %}
-
-                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded shadow-sm">
-                    <a href="{% url 'store:all_products' %}" class="btn btn-outline-secondary">
-                        <- Continue Shopping
-                    </a>
-                    <a href="{% url 'cart:empty_cart' %}"
-                       class="btn btn-outline-danger"
-                       onclick="return confirm('Are you sure you want to empty the entire cart?');">
-                        Empty Entire Cart
-                    </a>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="cart-items">
-                            {% for cart_item in cart_items %}
-                                <div class="card mb-4 shadow-sm">
-                                    <div class="row no-gutters">
-                                        <div class="col-md-3">
-                                            <img src="{{ cart_item.product.image.url }}" class="card-img" alt="{{ cart_item.product.name }}">
-                                        </div>
-                                        <div class="col-md-9">
-                                            <div class="card-body">
-                                                <h5 class="card-title">{{ cart_item.product.name }}</h5>
-                                                <p class="card-text">{{ cart_item.product.description|truncatewords:20 }}</p>
-                                                <p class="card-text"><strong>Price:</strong> €{{ cart_item.product.price }}</p>
-                                                <p><strong>Size:</strong>
-                                                    {% if cart_item.size %}
-                                                        {{ cart_item.size }}
-                                                    {% endif %}
-                                                </p>
-                                                <p class="card-text"><strong>Subtotal:</strong> €{{ cart_item.sub_total }}</p>
-
-                                                <div class="mb-2">
-                                                    <p class="card-text mb-1"><strong>Quantity:</strong></p>
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <a href="{% url 'cart:cart_remove' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-outline-danger me-2">-</a>
-                                                        <span class="mx-2">{{ cart_item.quantity }}</span>
-                                                        <a href="{% url 'cart:add_cart' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-outline-primary ms-2">+</a>
+                
+                <!-- Cart Items Display -->
+                <form method="POST" action="#">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="cart-items">
+                                {% for cart_item in cart_items %}
+                                    <div class="card mb-4 shadow-sm">
+                                        <div class="row no-gutters">
+                                            <div class="col-md-3">
+                                                <img src="{{ cart_item.product.image.url }}" class="card-img" alt="{{ cart_item.product.name }}">
+                                            </div>
+                                            <div class="col-md-9">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ cart_item.product.name }}</h5>
+                                                    <p class="card-text">{{ cart_item.product.description|truncatewords:20 }}</p>
+                                                    <p class="card-text"><strong>Price:</strong> €{{ cart_item.product.price }}</p>
+                                                    <p><strong>Size:</strong> 
+                                                        {% if cart_item.size %}
+                                                            {{ cart_item.size }}
+                                                        {% endif %}
+                                                    </p>
+                                                    <p class="card-text"><strong>Subtotal:</strong> €{{ cart_item.sub_total }}</p>
+                                                    
+                                                    <div class="mb-2">
+                                                        <p class="card-text mb-1"><strong>Quantity:</strong></p>
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <a href="{% url 'cart:cart_remove' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-outline-danger me-2">-</a>
+                                                            <span class="mx-2">{{ cart_item.quantity }}</span>
+                                                            <a href="{% url 'cart:add_cart' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-outline-primary ms-2">+</a>
+                                                        </div>
+                                                        <div>
+                                                            <a href="{% url 'cart:cart_remove' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-danger w-auto px-3">Remove</a>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <a href="{% url 'cart:cart_remove' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-danger w-auto px-3">Remove</a>
+
+                                                    {% if cart_item.quantity < cart_item.product.stock %}
+                                                        <a href="{% url 'cart:add_cart' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-outline-primary">+ Add</a>
+                                                    {% endif %}
+                                                    
+                                                    <!-- Checkbox to select this item for purchase -->
+                                                    <div class="form-check">
+                                                        <input type="checkbox" name="selected_items" value="{{ cart_item.product.id }}" class="form-check-input">
+                                                        <label class="form-check-label" for="selected_items">
+                                                            Select this item for purchase
+                                                        </label>
                                                     </div>
                                                 </div>
-
-                                                {% if cart_item.quantity < cart_item.product.stock %}
-                                                    <a href="{% url 'cart:add_cart' cart_item.product.id %}?size={{ cart_item.size }}" class="btn btn-sm btn-outline-primary">+ Add</a>
-                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Checkout</h5>
+                                    <p class="card-text">Please review your cart before proceeding with the payment.</p>
+                                    <hr>
+                                    <p><strong>Total: €{{ total }}</strong></p>
 
-                    <div class="col-md-4">
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Checkout</h5>
-                                <p class="card-text">Please review your cart before proceeding with the payment.</p>
-                                <hr>
-
-                                {% if voucher %}
-                                    <tr class="subtotal">
-                                        <td>Total</td>
-                                        <td colspan="4"></td>
-                                        <td class="num">€{{ total|floatformat:"2" }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>"{{ voucher.code }}" voucher ({{ voucher.discount }}% off)</td>
-                                        <td colspan="4"></td>
-                                        <td class="num neg">- €{{ discount|floatformat:"2" }}</td>
-                                    </tr>
-                                    <tr class="total">
-                                        <td>Total</td>
-                                        <td colspan="4"></td>
-                                        <td class="num">€{{ new_total|floatformat:"2" }}</td>
-                                    </tr>
-                                {% else %}
-                                    <tr class="total">
-                                        <td>Total</td>
-                                        <td colspan="4"></td>
-                                        <td class="num">€{{ total|floatformat:"2" }}</td>
-                                    </tr>
-                                {% endif %}
-
-                                </tbody>
-                                </table>
-
-                                <p>Apply a voucher:</p>
-                                <form action="{% url 'vouchers:apply' %}" method="post">
-                                    {{ voucher_apply_form }}
-                                    <input type="submit" value="Apply">
-                                    {% csrf_token %}
-                                </form>
-
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    <label for="requested_points">Loyalty Points to Apply: (Max: {{ loyalty_points }})</label>
-                                    <input type="number" name="requested_points" id="requested_points" max="{{ loyalty_points }}" min="0" value="0" required>
-                                    <button type="submit" class="btn btn-success w-100 mt-2">Apply Loyalty Points</button>
-                                </form>
-
-                                <a href="#" class="btn btn-primary w-100 mt-3 mb-3" id="proceedToCheckout">Proceed to Checkout</a>
-
-                                <div id="paymentSection" style="display: none; margin-top: 10px;">
-                                    <form action="{% url 'cart:cart_detail' %}" method="POST">
+                                    <!-- Loyalty Points Section -->
+                                    <form method="POST">
                                         {% csrf_token %}
-                                        <button class="btn btn-secondary btn-block my_custom_button" type="submit">Pay with card</button>
+                                        <label for="requested_points">Loyalty Points to Apply: (Max: {{ loyalty_points }})</label>
+                                        <input type="number" name="requested_points" id="requested_points" max="{{ loyalty_points }}" min="0" value="0" required>
+                                        <button type="submit" class="btn btn-success w-100 mt-2">Apply Loyalty Points</button>
                                     </form>
+
+                                    {% if voucher_code %}
+                                        <p><strong>Voucher Code Applied: {{ voucher_code }}</strong></p>
+                                        <p><strong>Discount: -€{{ discount }}</strong></p>
+                                        <p><strong>New Total: €{{ new_total }}</strong></p>
+                                    {% endif %}
+                                    
+                                    <!-- Voucher Code Form -->
+                                    <form method="POST">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="voucher_code">Voucher Code:</label>
+                                            <input type="text" name="voucher_code" class="form-control" value="{{ voucher_code }}">
+                                        </div>
+                                        <button type="submit" class="btn btn-success w-100 mt-2">Apply Voucher Code</button>
+                                    </form>
+
+                                    <button type="submit" class="btn btn-primary w-100 mt-3 mb-3">Proceed to Checkout</button>
+                                    
+                                    <div id="paymentSection" style="display: none; margin-top: 10px;">
+                                        <form action="{% url 'cart:cart_detail' %}" method="POST">
+                                            {% csrf_token %}
+                                            <button class="btn btn-secondary btn-block my_custom_button" type="submit">Pay with card</button>
+                                        </form>
+                                    </div>
+                                    
+                                    {% if error %}
+                                        <p style="color: red;">Error: {{ error }}</p>
+                                    {% endif %}
                                 </div>
-
-                                {% if error %}
-                                    <p style="color: red;">Error: {{ error }}</p>
-                                {% endif %}
-
-                                <p><strong>Total: €{{ total }}</strong></p>
-                                {% if discount > 0 %}
-                                    <p><strong>Loyalty Discount: -€{{ discount }}</strong></p>
-                                {% endif %}
-                                <p><strong>Final Total: €{{ new_total|default:final_total|floatformat:"2" }}</strong></p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </form>
             {% endif %}
         {% endif %}
     </div>
-
+    
     <script>
         document.getElementById("proceedToCheckout").addEventListener("click", function(event) {
             event.preventDefault();
@@ -184,4 +163,3 @@
         }
     </style>
 {% endblock %}
-
