@@ -18,7 +18,7 @@ def voucher_apply(request):
                 request.session['voucher_id'] = voucher.id
             except Voucher.DoesNotExist:
                 request.session['voucher_id'] = None
-        # Always redirect back to the page they came from
+    
         return redirect(request.POST.get('next', 'cart:cart_detail'))
 
 
