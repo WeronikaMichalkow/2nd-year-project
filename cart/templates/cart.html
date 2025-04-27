@@ -37,9 +37,7 @@
                     </div>
                 {% endif %}
 
-                
                 <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded shadow-sm">
-                    
                     <button id="selectAll" class="btn btn-outline-secondary">
                         Select All
                     </button>
@@ -76,14 +74,13 @@
                                                 </p>
                                                 <p class="card-text"><strong>Subtotal:</strong> €{{ cart_item.sub_total }}</p>
                                                 
-                                                
                                                 <div class="form-check">
                                                     <input type="checkbox" class="form-check-input item-checkbox" value="{{ cart_item.product.id }}" data-subtotal="{{ cart_item.sub_total }}">
                                                     <label class="form-check-label" for="item_{{ cart_item.product.id }}">
                                                         Select this item for purchase
                                                     </label>
                                                 </div>
-                                                
+
                                                 <div class="mb-2">
                                                     <p class="card-text mb-1"><strong>Quantity:</strong></p>
                                                     <div class="d-flex align-items-center mb-2">
@@ -106,7 +103,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                    
+
                     <div class="col-md-4">
                         <div class="card shadow-sm">
                             <div class="card-body">
@@ -114,10 +111,8 @@
                                 <p class="card-text">Please review your selected items before proceeding with payment.</p>
                                 <hr>
 
-                                
-                                <p><strong>Selected Items Total: €<span id="selectedTotal">0.00</span></strong></p>
+                                <p><strong>Total: €<span id="finalTotal">0.00</span></strong></p>
 
-                                
                                 <form method="POST">
                                     {% csrf_token %}
                                     <label for="requested_points">Loyalty Points to Apply: (Max: {{ loyalty_points }})</label>
@@ -125,13 +120,6 @@
                                     <button type="submit" class="btn btn-success w-100 mt-2">Apply Loyalty Points</button>
                                 </form>
 
-                                
-                                <p><strong>Loyalty Discount: <span id="loyaltyDiscount">€0.00</span></strong></p>
-
-                                
-                                <p><strong>Final Total after Loyalty: €<span id="finalTotalAfterLoyalty">0.00</span></strong></p>
-
-                                
                                 <form method="POST" id="voucherForm">
                                     {% csrf_token %}
                                     <div class="form-group">
@@ -141,13 +129,6 @@
                                     <button type="submit" class="btn btn-success w-100 mt-2" id="applyVoucherButton">Apply Voucher Code</button>
                                 </form>
 
-                                
-                                <p><strong>Voucher Discount: <span id="voucherDiscount">€0.00</span></strong></p>
-
-                                
-                                <p><strong>Total after Voucher Discount: €<span id="totalAfterVoucher">0.00</span></strong></p>
-
-                                
                                 <button type="button" class="btn btn-primary w-100 mt-3 mb-3" id="proceedToCheckout">Proceed to Checkout</button>
 
                                 <div id="paymentSection" style="display: none; margin-top: 10px;">
@@ -167,7 +148,7 @@
             {% endif %}
         {% endif %}
     </div>
-    
+
     <script>
         document.getElementById("proceedToCheckout").addEventListener("click", function(event) {
             event.preventDefault();
@@ -177,15 +158,9 @@
 
         const checkboxes = document.querySelectorAll('.item-checkbox');
         const selectAllButton = document.getElementById("selectAll");
-        const selectedTotalElem = document.getElementById('selectedTotal');
-        const loyaltyDiscountElem = document.getElementById('loyaltyDiscount');
-        const finalTotalAfterLoyaltyElem = document.getElementById('finalTotalAfterLoyalty');
-        const voucherDiscountElem = document.getElementById('voucherDiscount');
-        const totalAfterVoucherElem = document.getElementById('totalAfterVoucher');
-        
+        const finalTotalElem = document.getElementById('finalTotal');
         const loyaltyPointsApplied = parseFloat('{{ applied_loyalty_points|default:0 }}');
         const loyaltyDiscountPerPoint = parseFloat('{{ loyalty_point_value|default:"0.1" }}');  
-        const loyaltyDiscountAmount = loyaltyPointsApplied * loyaltyDiscountPerPoint;
 
         function updateTotals() {
             let selectedTotal = 0;
@@ -195,29 +170,26 @@
                 }
             });
 
-            let loyaltyDiscount = Math.min(loyaltyDiscountAmount, selectedTotal);
-            let finalTotalAfterLoyalty = selectedTotal - loyaltyDiscount;
+            let total = selectedTotal;
 
-            selectedTotalElem.textContent = selectedTotal.toFixed(2);
-            loyaltyDiscountElem.textContent = loyaltyDiscount > 0 ? `-€${loyaltyDiscount.toFixed(2)}` : '€0.00';
-            finalTotalAfterLoyaltyElem.textContent = finalTotalAfterLoyalty.toFixed(2);
+            
+            const loyaltyInput = document.getElementById('requested_points');
+            if (loyaltyInput) {
+                const requestedPoints = parseFloat(loyaltyInput.value) || 0;
+                const loyaltyDiscount = Math.min(requestedPoints * loyaltyDiscountPerPoint, total);
+                total -= loyaltyDiscount;
+            }
 
-            updateVoucherDiscount();
-        }
-
-        
-        function updateVoucherDiscount() {
+            
             const voucherCode = document.getElementById('voucherCode').value.trim();
             if (voucherCode) {
-                const voucherDiscountAmount = 10;  
-                const finalTotalAfterLoyalty = parseFloat(finalTotalAfterLoyaltyElem.textContent);
-                const totalAfterVoucher = finalTotalAfterLoyalty - voucherDiscountAmount;
-                voucherDiscountElem.textContent = `-€${voucherDiscountAmount.toFixed(2)}`;
-                totalAfterVoucherElem.textContent = totalAfterVoucher.toFixed(2);
+                const voucherDiscountAmount = 10; 
+                total = Math.max(total - voucherDiscountAmount, 0);
             }
+
+            finalTotalElem.textContent = total.toFixed(2);
         }
 
-        
         selectAllButton.addEventListener("click", function() {
             checkboxes.forEach(function(cb) {
                 cb.checked = true;
@@ -225,10 +197,12 @@
             updateTotals();
         });
 
-        
         checkboxes.forEach(function(checkbox) {
             checkbox.addEventListener('change', updateTotals);
         });
+
+        document.getElementById('requested_points').addEventListener('input', updateTotals);
+        document.getElementById('voucherCode').addEventListener('input', updateTotals);
 
         updateTotals();
     </script>

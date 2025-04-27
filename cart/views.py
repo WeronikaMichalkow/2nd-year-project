@@ -390,8 +390,6 @@ def create_order(request):
 
 
 
-
-
 def thank_you(request):
     
     if request.user.is_authenticated:
